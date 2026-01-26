@@ -1,0 +1,175 @@
+/* @import "tailwindcss"; */
+/* Import Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+/* Root Theme Variables */
+:root {
+  /* Gold Color Palette */
+  --gold-50:  #F9F5E6;
+  --gold-100: #F4ECCF;
+  --gold-200: #EAD9A1;
+  --gold-300: #E0C673;
+  --gold-400: #D4AF37; /* Base */
+  --gold-500: #AA8C2C;
+  --gold-600: #806921;
+  --gold-700: #554616;
+  --gold-800: #2B230B;
+  --gold-900: #000000;
+
+  /* Dark Colors */
+  --dark-default: #0a0a0a;
+  --dark-100: #1a1a1a;
+  --dark-200: #2a2a2a;
+
+  /* Fonts */
+  --font-sans: 'Inter', sans-serif;
+  --font-serif: 'Playfair Display', serif;
+}
+
+/* --------------------
+   Font Utility Classes
+--------------------- */
+.font-sans {
+  font-family: var(--font-sans);
+}
+
+.font-serif {
+  font-family: var(--font-serif);
+}
+
+/* --------------------
+   Gold Color Utilities
+--------------------- */
+.text-gold { color: var(--gold-400); }
+.bg-gold { background-color: var(--gold-400); }
+
+.text-gold-50 { color: var(--gold-50); }
+.text-gold-100 { color: var(--gold-100); }
+.text-gold-200 { color: var(--gold-200); }
+.text-gold-300 { color: var(--gold-300); }
+.text-gold-400 { color: var(--gold-400); }
+.text-gold-500 { color: var(--gold-500); }
+.text-gold-600 { color: var(--gold-600); }
+.text-gold-700 { color: var(--gold-700); }
+.text-gold-800 { color: var(--gold-800); }
+.text-gold-900 { color: var(--gold-900); }
+
+.bg-gold-50 { background-color: var(--gold-50); }
+.bg-gold-100 { background-color: var(--gold-100); }
+.bg-gold-200 { background-color: var(--gold-200); }
+.bg-gold-300 { background-color: var(--gold-300); }
+.bg-gold-400 { background-color: var(--gold-400); }
+.bg-gold-500 { background-color: var(--gold-500); }
+.bg-gold-600 { background-color: var(--gold-600); }
+.bg-gold-700 { background-color: var(--gold-700); }
+.bg-gold-800 { background-color: var(--gold-800); }
+.bg-gold-900 { background-color: var(--gold-900); }
+
+/* --------------------
+   Dark Background Utilities
+--------------------- */
+.bg-dark { background-color: var(--dark-default); }
+.bg-dark-100 { background-color: var(--dark-100); }
+.bg-dark-200 { background-color: var(--dark-200); }
+
+.text-dark { color: var(--dark-default); }
+.text-dark-100 { color: var(--dark-100); }
+.text-dark-200 { color: var(--dark-200); }
+
+.border-dark { border-color: var(--dark-default); }
+.border-dark-100 { border-color: var(--dark-100); }
+.border-dark-200 { border-color: var(--dark-200); }
+
+.border-gold { border-color: var(--gold-400); }
+.border-gold-50 { border-color: var(--gold-50); }
+.border-gold-100 { border-color: var(--gold-100); }
+.border-gold-200 { border-color: var(--gold-200); }
+.border-gold-300 { border-color: var(--gold-300); }
+.border-gold-400 { border-color: var(--gold-400); }
+.border-gold-500 { border-color: var(--gold-500); }
+.border-gold-600 { border-color: var(--gold-600); }
+.border-gold-700 { border-color: var(--gold-700); }
+.border-gold-800 { border-color: var(--gold-800); }
+.border-gold-900 { border-color: var(--gold-900); }
+
+/* Background opacity variants */
+.bg-dark\/50 { background-color: rgba(10, 10, 10, 0.5); }
+.bg-dark\/75 { background-color: rgba(10, 10, 10, 0.75); }
+.bg-dark-100\/50 { background-color: rgba(26, 26, 26, 0.5); }
+.bg-dark-100\/75 { background-color: rgba(26, 26, 26, 0.75); }
+.bg-dark-200\/50 { background-color: rgba(42, 42, 42, 0.5); }
+.bg-dark-200\/75 { background-color: rgba(42, 42, 42, 0.75); }
+
+.bg-gold\/50 { background-color: rgba(212, 175, 55, 0.5); }
+.bg-gold\/75 { background-color: rgba(212, 175, 55, 0.75); }
+.bg-gold-400\/10 { background-color: rgba(212, 175, 55, 0.1); }
+.bg-gold-400\/20 { background-color: rgba(212, 175, 55, 0.2); }
+
+/* --------------------
+   Radial Gradient Utilities
+--------------------- */
+.bg-gradient-radial {
+  background-image: radial-gradient(circle, var(--gold-400), var(--dark-default));
+}
+
+.bg-gradient-radial-gold {
+  background-image: radial-gradient(circle at center, #D4AF37 0%, #0a0a0a 100%);
+}
+
+.bg-gradient-radial-dark {
+  background-image: radial-gradient(circle at top right, rgba(212, 175, 55, 0.15) 0%, transparent 70%);
+}
+
+/* Gradient stops for Tailwind compatibility */
+.from-gold {
+  --tw-gradient-from: var(--gold-400) var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(212 175 55 / 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+.from-dark {
+  --tw-gradient-from: var(--dark-default) var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(10 10 10 / 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+.to-dark {
+  --tw-gradient-to: var(--dark-default) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+.to-gold {
+  --tw-gradient-to: var(--gold-400) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+/* Hover states for dark and gold colors */
+.hover\:bg-dark:hover { background-color: var(--dark-default); }
+.hover\:bg-dark-100:hover { background-color: var(--dark-100); }
+.hover\:bg-dark-200:hover { background-color: var(--dark-200); }
+
+.hover\:bg-gold:hover { background-color: var(--gold-400); }
+.hover\:bg-gold-50:hover { background-color: var(--gold-50); }
+.hover\:bg-gold-100:hover { background-color: var(--gold-100); }
+.hover\:bg-gold-200:hover { background-color: var(--gold-200); }
+.hover\:bg-gold-300:hover { background-color: var(--gold-300); }
+.hover\:bg-gold-400:hover { background-color: var(--gold-400); }
+.hover\:bg-gold-500:hover { background-color: var(--gold-500); }
+
+.hover\:text-gold:hover { color: var(--gold-400); }
+.hover\:text-dark:hover { color: var(--dark-default); }
+
+.hover\:border-gold:hover { border-color: var(--gold-400); }
+.hover\:border-dark:hover { border-color: var(--dark-default); }
+
+/* --------------------
+   Basic Reset
+--------------------- */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-sans);
+  background-color: var(--dark-default);
+  color: white;
+}
