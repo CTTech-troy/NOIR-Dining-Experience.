@@ -124,9 +124,9 @@ export default function App() {
             )}
           </button>
 
-          <button className="p-2 hover:text-gold-400 transition-colors md:hidden">
+          {/* <button className="p-2 hover:text-gold-400 transition-colors md:hidden">
             <MenuIcon className="w-6 h-6" />
-          </button>
+          </button> */}
         </div>
       </nav>
 
@@ -186,4 +186,8 @@ export default function App() {
         onClose={() => setIsPaymentSuccess(false)}
       />
 
-      {/* Floatin
+      {/* Floating Chatbot */}
+      <FloatingChatbot />
+    </div>
+  );
+}

@@ -5,7 +5,12 @@ import  Button  from './ui/Button';
 
 export default function BookingCalendar({ onBook }) {
   const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedTime, setSelectedTime] = useState(null);
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
   const daysInMonth = new Date(
     currentMonth.getFullYear(),
     currentMonth.getMonth() + 1,
@@ -32,15 +37,39 @@ export default function BookingCalendar({ onBook }) {
     month: 'long'
   });
   const year = currentMonth.getFullYear();
+
+  // Available time slots
+  const timeSlots = [
+    '17:00', '17:30', '18:00', '18:30', '19:00', '19:30',
+    '20:00', '20:30', '21:00', '21:30', '22:00', '22:30'
+  ];
+
+  // Check if date is in the past
+  const isDatePassed = (day) => {
+    const checkDate = new Date(year, currentMonth.getMonth(), day);
+    checkDate.setHours(0, 0, 0, 0);
+    return checkDate < today;
+  };
+
+  const handlePrevMonth = () => {
+    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1));
+  };
+
+  const handleNextMonth = () => {
+    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1));
+  };
+
   const handleBookClick = () => {
-    if (selectedDate && onBook) {
+    if (selectedDate && selectedTime && onBook) {
       onBook({
         day: selectedDate,
         month: monthName,
-        year: year
+        year: year,
+        time: selectedTime
       });
     }
   };
+  
   return (
     <section
       id="reservations"
@@ -96,9 +125,7 @@ export default function BookingCalendar({ onBook }) {
               <span>Max 8 Guests</span>
             </div>
           </div>
-        </div>
-
-        {/* Calendar Component */}
+        </div>        {/* Calendar Component */}
         <motion.div
           initial={{
             opacity: 0,
@@ -115,13 +142,17 @@ export default function BookingCalendar({ onBook }) {
 
           {/* Calendar Header */}
           <div className="flex justify-between items-center mb-8">
-            <button className="p-2 hover:text-gold-400 transition-colors">
+            <button 
+              onClick={handlePrevMonth}
+              className="p-2 hover:text-gold-400 transition-colors">
               <ChevronLeft className="w-5 h-5" />
             </button>
             <h3 className="text-xl font-serif text-white">
               {monthName} <span className="text-gold-400">{year}</span>
             </h3>
-            <button className="p-2 hover:text-gold-400 transition-colors">
+            <button 
+              onClick={handleNextMonth}
+              className="p-2 hover:text-gold-400 transition-colors">
               <ChevronRight className="w-5 h-5" />
             </button>
           </div>
@@ -138,48 +169,80 @@ export default function BookingCalendar({ onBook }) {
             <div key={`pad-${i}`} />
             )}
 
-            {days.map((day) =>
-            <motion.button
-              key={day}
-              whileHover={{
-                scale: 1.1
-              }}
-              whileTap={{
-                scale: 0.95
-              }}
-              onClick={() => setSelectedDate(day)}
-              className={`
-                  relative h-10 w-10 flex items-center justify-center text-sm font-medium transition-colors duration-300
-                  ${selectedDate === day ? 'text-black' : 'text-white hover:text-gold-400'}
-                `}>
+            {days.map((day) => {
+              const isPassed = isDatePassed(day);
+              return (
+                <motion.button
+                  key={day}
+                  whileHover={!isPassed ? { scale: 1.1 } : {}}
+                  whileTap={!isPassed ? { scale: 0.95 } : {}}
+                  onClick={() => !isPassed && setSelectedDate(day)}
+                  disabled={isPassed}
+                  className={`
+                    relative h-10 w-10 flex items-center justify-center text-sm font-medium transition-colors duration-300
+                    ${isPassed ? 'text-white/20 cursor-not-allowed' : ''}
+                    ${selectedDate === day && !isPassed ? 'text-black' : !isPassed ? 'text-white hover:text-gold-400' : ''}
+                  `}>
 
-                {selectedDate === day &&
-              <motion.div
-                layoutId="selectedDay"
-                className="absolute inset-0 bg-gold-400 rounded-full"
-                transition={{
-                  type: 'spring',
-                  stiffness: 300,
-                  damping: 30
-                }} />
-
-              }
-                <span className="relative z-10">{day}</span>
-              </motion.button>
-            )}
+                  {selectedDate === day && !isPassed &&
+                <motion.div
+                  layoutId="selectedDay"
+                  className="absolute inset-0 bg-gold-400 rounded-full"
+                  transition={{
+                    type: 'spring',
+                    stiffness: 300,
+                    damping: 30
+                  }} />
+                  }
+                  <span className="relative z-10">{day}</span>
+                </motion.button>
+              );
+            })}
           </div>
+
+          {/* Time Selection */}
+          {selectedDate && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6">
+              <label className="block text-sm font-semibold text-gold-400 mb-3">
+                Select Time
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {timeSlots.map((time) => (
+                  <motion.button
+                    key={time}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setSelectedTime(time)}
+                    className={`
+                      py-2 rounded text-xs font-medium transition-colors
+                      ${selectedTime === time
+                        ? 'bg-gold-400 text-black'
+                        : 'bg-dark-200 text-white border border-gold-400/20 hover:border-gold-400'
+                      }
+                    `}>
+                    {time}
+                  </motion.button>
+                ))}
+              </div>
+            </motion.div>
+          )}
 
           <Button
             className="w-full"
-            disabled={!selectedDate}
+            disabled={!selectedDate || !selectedTime}
             onClick={handleBookClick}>
 
-            {selectedDate ?
-            `Book for ${monthName} ${selectedDate}` :
-            'Select a Date'}
+            {selectedDate && selectedTime
+              ? `Book ${monthName} ${selectedDate} at ${selectedTime}`
+              : selectedDate
+              ? 'Select Time'
+              : 'Select a Date'}
           </Button>
         </motion.div>
       </div>
-    </section>);
-
+    </section>
+  );
 }
