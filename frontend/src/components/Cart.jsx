@@ -95,11 +95,16 @@ export default function Cart({
                 }} />
 
                     <div className="flex-1 flex flex-col justify-between">
-                      <div className="flex justify-between items-start">
-                        <h3 className="font-serif text-white">{item.title}</h3>
-                        <span className="text-gold-400">{item.price}</span>
+                      <div className="flex justify-between items-start gap-2">
+                        <div className="flex-1">
+                          <h3 className="font-serif text-white">{item.name}</h3>
+                          {item.description && (
+                            <p className="text-xs text-white/60 mt-1 line-clamp-2">{item.description}</p>
+                          )}
+                        </div>
+                        <span className="text-gold-400 font-semibold whitespace-nowrap">{item.price}</span>
                       </div>
-                      <div className="flex justify-between items-center mt-2">
+                      <div className="flex justify-between items-center mt-3">
                         <span className="text-xs text-white/50 uppercase tracking-wider">
                           Qty: {item.quantity}
                         </span>

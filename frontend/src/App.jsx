@@ -1,108 +1,134 @@
-import React, { useState } from 'react';
-import { ShoppingBag, Menu as MenuIcon } from 'lucide-react';
-import { motion, useScroll, useSpring } from 'framer-motion';
+import React, { useState } from 'react'
+import { ShoppingBag, Menu as MenuIcon } from 'lucide-react'
+import { motion, useScroll, useSpring } from 'framer-motion'
 
-import Hero from './components/Hero';
-import MenuSection from './components/MenuSection';
-import BookingCalendar from './components/BookingCalendar';
-import Cart from './components/Cart';
-import PaymentConfirmation from './components/PaymentConfirmation';
-import ReservationDetailsModal from './components/ReservationDetailsModal';
-import PaymentMethodModal from './components/PaymentMethodModal';
-import ReservationPaymentModal from './components/ReservationPaymentModal';
-import FullMenuPage from './components/FullMenuPage';
-import FloatingChatbot from './components/FloatingChatbot';
+// import Header from './components/Header'
+import Hero from './components/Hero'
+import AboutSection from './components/AboutSection'
+import MenuSection from './components/MenuSection'
+import MenuPage from './components/MenuPage'
+import ReviewsSection from './components/ReviewsSection'
+import BookingCalendar from './components/BookingCalendar'
+import GallerySection from './components/GallerySection'
+import Footer from './components/Footer'
+import Cart from './components/Cart'
+import PaymentConfirmation from './components/PaymentConfirmation'
+import ReservationDetailsModal from './components/ReservationDetailsModal'
+import PaymentMethodModal from './components/PaymentMethodModal'
+import ReservationPaymentModal from './components/ReservationPaymentModal'
+import FullMenuPage from './components/FullMenuPage'
+import FloatingChatbot from './components/FloatingChatbot'
 
 export default function App() {
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [isPaymentSuccess, setIsPaymentSuccess] = useState(false);
-  const [isFullMenuOpen, setIsFullMenuOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState('home')
+  const [isCartOpen, setIsCartOpen] = useState(false)
+  const [isPaymentSuccess, setIsPaymentSuccess] = useState(false)
+  const [isFullMenuOpen, setIsFullMenuOpen] = useState(false)
 
   // Modal States
-  const [isReservationModalOpen, setIsReservationModalOpen] = useState(false);
-  const [isPaymentMethodOpen, setIsPaymentMethodOpen] = useState(false);
-  const [isReservationPaymentOpen, setIsReservationPaymentOpen] = useState(false);
+  const [isReservationModalOpen, setIsReservationModalOpen] = useState(false)
+  const [isPaymentMethodOpen, setIsPaymentMethodOpen] = useState(false)
+  const [isReservationPaymentOpen, setIsReservationPaymentOpen] = useState(false)
 
-  const [selectedReservationDate, setSelectedReservationDate] = useState(null);
-  const [cartItems, setCartItems] = useState([]);
+  const [selectedReservationDate, setSelectedReservationDate] = useState(null)
+  const [cartItems, setCartItems] = useState([])
 
-  const { scrollYProgress } = useScroll();
+  const { scrollYProgress } = useScroll()
   const scaleX = useSpring(scrollYProgress, {
     stiffness: 100,
     damping: 30,
-    restDelta: 0.001
-  });
+    restDelta: 0.001,
+  })
 
   const cartTotal = cartItems.reduce((sum, item) => {
-    const price = parseFloat(item.price.replace('$', ''));
-    return sum + price * item.quantity;
-  }, 0);
+    const price = parseFloat(item.price.replace('$', ''))
+    return sum + price * item.quantity
+  }, 0)
+
+  const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0)
 
   const addToCart = (item) => {
     setCartItems((prev) => {
-      const existing = prev.find((i) => i.id === item.id);
+      const existing = prev.find((i) => i.id === item.id)
       if (existing) {
         return prev.map((i) =>
           i.id === item.id
-            ? { ...i, quantity: i.quantity + 1 }
-            : i
-        );
+            ? {
+                ...i,
+                quantity: i.quantity + 1,
+              }
+            : i,
+        )
       }
-      return [...prev, { ...item, quantity: 1 }];
-    });
-    setIsCartOpen(true);
-  };
+      return [
+        ...prev,
+        {
+          ...item,
+          quantity: 1,
+        },
+      ]
+    })
+    setIsCartOpen(true)
+  }
 
   const removeFromCart = (id) => {
-    setCartItems((prev) => prev.filter((i) => i.id !== id));
-  };
+    setCartItems((prev) => prev.filter((i) => i.id !== id))
+  }
 
   // Cart Checkout Flow
   const handleCheckoutStart = () => {
-    setIsCartOpen(false);
-    setIsPaymentMethodOpen(true);
-  };
+    setIsCartOpen(false)
+    setIsPaymentMethodOpen(true)
+  }
 
   const handlePaymentComplete = () => {
-    setIsPaymentMethodOpen(false);
+    setIsPaymentMethodOpen(false)
     setTimeout(() => {
-      setIsPaymentSuccess(true);
-      setCartItems([]);
-    }, 500);
-  };
+      setIsPaymentSuccess(true)
+      setCartItems([])
+    }, 500)
+  }
 
   // Reservation Flow
   const handleDateSelect = (date) => {
-    setSelectedReservationDate(date);
-    setIsReservationModalOpen(true);
-  };
+    setSelectedReservationDate(date)
+    setIsReservationModalOpen(true)
+  }
 
   const handleReservationDetailsComplete = (details) => {
-    setIsReservationModalOpen(false);
-    setIsReservationPaymentOpen(true);
-  };
+    setIsReservationModalOpen(false)
+    setIsReservationPaymentOpen(true)
+  }
 
   const handleReservationPaymentSelect = (option) => {
-    setIsReservationPaymentOpen(false);
+    setIsReservationPaymentOpen(false)
 
     if (option === 'now') {
-      setIsPaymentMethodOpen(true);
+      setIsPaymentMethodOpen(true)
     } else {
       setTimeout(() => {
-        setIsPaymentSuccess(true);
-      }, 500);
+        setIsPaymentSuccess(true)
+      }, 500)
     }
-  };
+  }
+
+  // Handle navigation
+  const handleNavigation = (page) => {
+    setCurrentPage(page)
+    window.scrollTo(0, 0)
+  }
 
   return (
-    <div className="bg-black min-h-screen text-white selection:bg-gold-400 selection:text-black">
+        <div className="bg-black min-h-screen text-white selection:bg-gold-400 selection:text-black">
       {/* Film Grain Overlay */}
       <div className="film-grain" />
 
       {/* Progress Bar */}
       <motion.div
         className="fixed top-0 left-0 right-0 h-1 bg-gold-400 origin-left z-[100]"
-        style={{ scaleX }}
+        style={{
+          scaleX,
+        }}
       />
 
       {/* Navigation */}
@@ -123,27 +149,35 @@ export default function App() {
               </span>
             )}
           </button>
-
           {/* <button className="p-2 hover:text-gold-400 transition-colors md:hidden">
             <MenuIcon className="w-6 h-6" />
           </button> */}
         </div>
       </nav>
-
       {/* Main Content */}
       <main>
-        <Hero />
+        {currentPage === 'home' && (
+          <>
+            <Hero />
+            <AboutSection />
+            <MenuSection
+              addToCart={addToCart}
+              onViewFullMenu={() => setCurrentPage('menu')}
+            />
+            <ReviewsSection />
+            <BookingCalendar onBook={handleDateSelect} />
+            <GallerySection />
+          </>
+        )}
 
-        <MenuSection
-          addToCart={addToCart}
-          onViewFullMenu={() => setIsFullMenuOpen(true)}
-        />
+        {currentPage === 'menu' && <MenuPage addToCart={addToCart} />}
 
-        <BookingCalendar onBook={handleDateSelect} />
+        {currentPage === 'about' && <AboutSection />}
 
-        <footer className="py-12 border-t border-white/10 text-center text-white/40 font-sans text-sm">
-          <p>&copy; 2026 NOIR Dining Experience. All rights reserved.</p>
-        </footer>
+        {currentPage === 'reservations' && <BookingCalendar onBook={handleDateSelect} />}
+
+        <ChefProfile />
+        <Footer />
       </main>
 
       {/* Overlays */}
@@ -189,5 +223,5 @@ export default function App() {
       {/* Floating Chatbot */}
       <FloatingChatbot />
     </div>
-  );
+  )
 }

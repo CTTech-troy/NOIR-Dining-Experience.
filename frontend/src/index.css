@@ -173,3 +173,26 @@ body {
   background-color: var(--dark-default);
   color: white;
 }
+/* ==================== HIDE VAPI DEFAULT WIDGET ==================== */
+/* Hide all Vapi default UI elements - we use custom FloatingChatbot component */
+#vapi-root,
+#vapi-root *,
+#vapi-support-btn,
+.vapi-widget,
+.vapi-widget *,
+.vapi-btn,
+.vapi-button,
+.vapi-button *,
+.VAP_iframe,
+iframe[src*="vapi"],
+[data-testid*="vapi"],
+[data-testid*="vapi-"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  height: 0 !important;
+  width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
