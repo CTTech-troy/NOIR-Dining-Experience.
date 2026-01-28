@@ -129,9 +129,9 @@ export default function App() {
               </span>
             )}
           </button>
-          <button className="p-2 hover:text-gold-400 transition-colors md:hidden">
+          {/* <button className="p-2 hover:text-gold-400 transition-colors md:hidden">
             <MenuIcon className="w-6 h-6" />
-          </button>
+          </button> */}
         </div>
       </nav>
 
