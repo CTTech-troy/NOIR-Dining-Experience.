@@ -1,425 +1,517 @@
-import React, { useState } from 'react'
-import { motion } from 'framer-motion'
-import { Wine, ChefHat, Clock, Utensils, Cake, Martini, ShoppingBag } from 'lucide-react'
+import React, { useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { X, ChevronRight, Wine, Info } from 'lucide-react'
 
-const FULL_MENU = {
-  starters: [
-    {
-      name: 'Amuse-Bouche Selection',
-      price: 'Complimentary',
-      description: 'Chef\'s seasonal selection of bite-sized creations to awaken the palate',
-      image: 'https://i.pinimg.com/736x/0e/e2/e5/0ee2e5145bf9741a744873a2423cd9d4.jpg'
-    },
-    {
-      name: 'Wagyu Tartare',
-      price: '$42',
-      description: 'Hand-cut A5 Wagyu beef, truffle oil, quail egg, shallots, capers',
-      image: 'https://i.pinimg.com/736x/28/32/85/283285a4051423e8e93ce48ad2ff3bfe.jpg'
-    },
-    {
-      name: 'Pan-Seared Foie Gras',
-      price: '$48',
-      description: 'Hudson Valley foie gras, brioche croutons, cherry gastrique, micro greens',
-      image: 'https://i.pinimg.com/736x/a4/45/79/a445798a6e3e724d41c47fb40f91f86e.jpg'
-    },
-    {
-      name: 'Oyster Trio',
-      price: '$38',
-      description: 'Three varieties from the finest oyster beds, mignonette, champagne vinegar',
-      image: 'https://i.pinimg.com/736x/68/49/4c/68494c5d5766d37e5f458c7a4f22f726.jpg'
-    },
-    {
-      name: 'Burrata & Heirloom Tomato',
-      price: '$22',
-      description: 'Creamy burrata, heirloom tomatoes, aged balsamic, basil oil, sea salt',
-      image: 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
-    },
-    {
-      name: 'Lobster Bisque',
-      price: '$26',
-      description: 'Silky Maine lobster bisque, crispy bacon, truffle foam',
-      image: 'https://i.pinimg.com/736x/74/4c/b1/744cb1dd548cf968adb9f348c7637aee.jpg'
-    },
-    {
-      name: 'Seared Scallops',
-      price: '$38',
-      description: 'Hokkaido scallops, cauliflower purée, ossetra caviar, brown butter',
-      image: 'https://i.pinimg.com/736x/b6/a1/da/b6a1dadf70f1d714940af2d5834b4520.jpg'
+const MENU_CATEGORIES = [
+  {
+    name: 'Appetizers',
+    items: [
+      {
+        id: 1,
+        title: 'Wagyu Tartare',
+        price: '$42',
+        description:
+          'Hand-cut A5 Wagyu beef seasoned with truffle oil and quail egg.',
+        ingredients: 'A5 Wagyu, Black Truffle, Quail Egg, Shallots, Capers',
+        image:
+          'https://images.unsplash.com/photo-1544025162-d76690b609aa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+      },
+      {
+        id: 2,
+        title: 'Pan-Seared Scallops',
+        price: '$38',
+        description: 'Diver scallops served with cauliflower purée and caviar.',
+        ingredients:
+          'Hokkaido Scallops, Cauliflower, Osetra Caviar, Lemon Butter',
+        image:
+          'https://images.unsplash.com/photo-1559339352-11d035aa65de?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+      },
+      {
+        id: 8,
+        title: 'Oysters Rockefeller',
+        price: '$32',
+        description:
+          'Fresh oysters baked with spinach, herbs, and parmesan crust.',
+        ingredients:
+          'Blue Point Oysters, Spinach, Pernod, Parmesan, Breadcrumbs',
+        image:
+          'https://images.unsplash.com/photo-1626200419199-391ae4be7a41?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+      },
+      {
+        id: 10,
+        title: 'Tuna Crudo',
+        price: '$36',
+        description: 'Yellowfin tuna with citrus, jalapeño, and microgreens.',
+        ingredients: 'Yellowfin Tuna, Yuzu, Jalapeño, Microgreens, Sesame Oil',
+        image:
+          'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+      },
+      {
+        id: 11,
+        title: 'Foie Gras Terrine',
+        price: '$48',
+        description: 'Silky foie gras with fig compote and toasted brioche.',
+        ingredients: 'Foie Gras, Figs, Port Wine, Brioche, Sea Salt',
+        image:
+          'https://images.unsplash.com/photo-1625937286074-9ca519d5d9df?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+      },
+    ],
+  },
+  {
+    name: 'Main Courses',
+    items: [
+      {
+        id: 3,
+        title: 'Lobster Thermidor',
+        price: '$85',
+        description: 'Whole Maine lobster with cognac cream sauce and gruyère.',
+        ingredients: 'Maine Lobster, Cognac, Gruyère, Dijon Mustard, Tarragon',
+        image:
+          'https://images.unsplash.com/photo-1553603227-2358a3a6d2b2?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+      },
+      {
+        id: 4,
+        title: 'Truffle Risotto',
+        price: '$45',
+        description:
+          'Arborio rice slow-cooked with wild mushrooms and fresh black truffle.',
+        ingredients:
+          'Arborio Rice, Wild Mushrooms, Black Truffle, Parmigiano Reggiano',
+        image:
+          'https://images.unsplash.com/photo-1476124369491-e7addf5db371?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+      },
+      {
+        id: 5,
+        title: 'Duck Confit',
+        price: '$52',
+        description:
+          'Slow-cooked duck leg with cherry reduction and roasted root vegetables.',
+        ingredients: 'Duck Leg, Cherries, Red Wine, Parsnips, Thyme',
+        image:
+          'https://images.unsplash.com/photo-1518492104633-130d0cc84637?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+      },
+      {
+        id: 7,
+        title: 'Beef Wellington',
+        price: '$95',
+        description:
+          'Prime beef tenderloin wrapped in puff pastry with mushroom duxelles.',
+        ingredients:
+          'Beef Tenderloin, Puff Pastry, Foie Gras, Wild Mushrooms, Madeira Sauce',
+        image:
+          'https://images.unsplash.com/photo-1588168333986-5078d3ae3976?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+      },
+      {
+        id: 9,
+        title: 'Lamb Rack',
+        price: '$68',
+        description:
+          'Herb-crusted New Zealand lamb with rosemary jus and garlic confit.',
+        ingredients: 'Lamb Rack, Rosemary, Garlic Confit, Dijon, Breadcrumbs',
+        image:
+          'https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+      },
+    ],
+  },
+  {
+    name: 'Desserts',
+    items: [
+      {
+        id: 6,
+        title: 'Chocolate Soufflé',
+        price: '$24',
+        description:
+          'Dark chocolate soufflé with gold leaf and vanilla bean crème anglaise.',
+        ingredients:
+          '70% Dark Chocolate, Gold Leaf, Vanilla Bean, Free-range Eggs',
+        image:
+          'https://images.unsplash.com/photo-1579372786545-d24232daf58c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+      },
+      {
+        id: 12,
+        title: 'Crème Brûlée',
+        price: '$18',
+        description:
+          'Classic vanilla custard with caramelized sugar and fresh berries.',
+        ingredients:
+          'Vanilla Bean, Heavy Cream, Egg Yolks, Demerara Sugar, Berries',
+        image:
+          'https://images.unsplash.com/photo-1470124182917-cc6e71b22ecc?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+      },
+    ],
+  },
+  {
+    name: 'Beverages',
+    items: [
+      {
+        id: 13,
+        title: 'The Noir Martini',
+        price: '$22',
+        description:
+          'Our signature cocktail with activated charcoal, gin, and dry vermouth.',
+        ingredients:
+          'Botanical Gin, Dry Vermouth, Activated Charcoal, Lemon Twist',
+        image:
+          'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+      },
+      {
+        id: 14,
+        title: 'Smoked Old Fashioned',
+        price: '$24',
+        description:
+          'Bourbon whiskey infused with hickory smoke and maple bitters.',
+        ingredients:
+          'Kentucky Bourbon, Maple Bitters, Hickory Smoke, Orange Peel',
+        image:
+          'https://images.unsplash.com/photo-1595981267035-7b04ca84a82d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+      },
+      {
+        id: 15,
+        title: 'Château Margaux 2015',
+        price: '$450',
+        description:
+          'A premier grand cru classé from Bordeaux, France. Bottle only.',
+        ingredients: 'Cabernet Sauvignon, Merlot, Petit Verdot, Cabernet Franc',
+        image:
+          'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+      },
+      {
+        id: 16,
+        title: 'Vintage Champagne',
+        price: '$180',
+        description:
+          'Dom Pérignon Vintage 2012. Notes of white flowers and stone fruit.',
+        ingredients: 'Chardonnay, Pinot Noir',
+        image:
+          'https://images.unsplash.com/photo-1598155523122-3842334d6c10?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+      },
+    ],
+  },
+]
+const MENU_NOTES = [
+  'All prices are per person | Service charge not included',
+  'Our chef can accommodate vegetarian, vegan, and dietary restrictions with advance notice',
+  'Wine pairings available starting from $65 per person',
+  'Tasting menu experiences available upon request',
+  'Menu items may vary based on seasonal availability',
+  'Please inform our staff of any allergies',
+]
+export default function FullMenuPage({
+  isOpen,
+  onClose,
+  onAddToCart,
+}) {
+  // Close on ESC key
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') onClose()
     }
-  ],
-  mains: [
-    {
-      name: 'Pan-Seared Diver Scallops',
-      price: '$52',
-      description: 'Hokkaido diver scallops, saffron risotto, asparagus, beurre blanc',
-      image: 'https://i.pinimg.com/736x/4b/e6/f8/4be6f8018edb4902864ec3fbcde9c4a5.jpg'
-    },
-    {
-      name: 'Lobster Thermidor',
-      price: '$85',
-      description: 'Whole Maine lobster, cognac cream sauce, gruyère, tarragon, pommes anna',
-      image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
-    },
-    {
-      name: 'Dry-Aged Ribeye',
-      price: '$78',
-      description: '28-day dry-aged ribeye, roasted bone marrow, wild mushrooms, béarnaise',
-      image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
-    },
-    {
-      name: 'Filet Mignon',
-      price: '$72',
-      description: 'Prime beef tenderloin, truffle mashed potatoes, roasted vegetables, demi-glace',
-      image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
-    },
-    {
-      name: 'Rack of Lamb',
-      price: '$65',
-      description: 'Herb-crusted lamb, rosemary jus, flageolet beans, gratin dauphinois',
-      image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
-    },
-    {
-      name: 'Dover Sole Meunière',
-      price: '$62',
-      description: 'Whole Dover sole, brown butter, capers, lemon, haricots verts',
-      image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
-    },
-    {
-      name: 'Duck Breast',
-      price: '$58',
-      description: 'Magret de canard, cherry gastrique, duck leg confit, seasonal vegetables',
-      image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
-    },
-    {
-      name: 'Venison Wellington',
-      price: '$82',
-      description: 'Scottish venison, mushroom duxelles, puff pastry, red wine reduction',
-      image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
-    },
-    {
-      name: 'Branzino en Croûte de Sel',
-      price: '$56',
-      description: 'Sea bream baked in sea salt crust, fennel, heirloom potatoes',
-      image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+    if (isOpen) {
+      window.addEventListener('keydown', handleEsc)
+      document.body.style.overflow = 'hidden'
     }
-  ],
-  desserts: [
-    {
-      name: 'Grand Marnier Soufflé',
-      price: '$18',
-      description: '20-minute preparation. Light and airy soufflé with Grand Marnier liqueur, Grand Marnier sauce',
-      image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
-    },
-    {
-      name: 'Chocolate Torte',
-      price: '$16',
-      description: 'Rich dark chocolate cake, raspberry coulis, whipped cream, gold leaf',
-      image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
-    },
-    {
-      name: 'Crème Brûlée',
-      price: '$14',
-      description: 'Vanilla bean crème brûlée, caramelized sugar crust, fresh berries',
-      image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
-    },
-    {
-      name: 'Lemon Tart',
-      price: '$15',
-      description: 'Shortcrust pastry, tart lemon curd, Italian meringue, candied lemon',
-      image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
-    },
-    {
-      name: 'Panna Cotta',
-      price: '$13',
-      description: 'Silky panna cotta, berry coulis, pistachio crumble, edible flowers',
-      image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
-    },
-    {
-      name: 'Cheese Course',
-      price: '$22',
-      description: 'Artisanal selection of French and international cheeses, fresh fruits, crackers',
-      image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
-    },
-    {
-      name: 'Chocolate Mousse',
-      price: '$14',
-      description: 'Valrhona chocolate mousse, hazelnut praline, cocoa nibs, gold dust',
-      image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+    return () => {
+      window.removeEventListener('keydown', handleEsc)
+      document.body.style.overflow = 'unset'
     }
-  ],
-  drinks: [
-    {
-      name: 'Champagne & Sparkling',
-      items: [
-        'Champagne Billecart-Salmon Brut - $95/glass',
-        'Krug Clos d\'Ambonnay - $125/glass',
-        'Dom Pérignon 2012 - $145/glass',
-        'Laurent-Perrier Ultra Brut - $85/glass'
-      ]
-    },
-    {
-      name: 'White Wine',
-      items: [
-        'Chablis Grand Cru - William Fèvre - $65/glass',
-        'Puligny-Montrachet - $95/glass',
-        'Condrieu - Yalumba - $75/glass',
-        'Sancerre - Alphonse Mellot - $55/glass'
-      ]
-    },
-    {
-      name: 'Red Wine',
-      items: [
-        'Pauillac - Château Lynch-Bages - $85/glass',
-        'Barolo - Gaja Barbaresco - $105/glass',
-        'Super Tuscan - Tignanello - $95/glass',
-        'Napa Valley Cabernet - Opus One - $115/glass'
-      ]
-    },
-    {
-      name: 'Cocktails',
-      items: [
-        'Classic Martini - $18',
-        'Old Fashioned - $16',
-        'Champagne Cocktail - $20',
-        'Negroni - $17',
-        'Manhattan - $18'
-      ]
-    }
-  ]
-}
-
-export default function MenuPage({ addToCart }) {
-  const [selectedCategory, setSelectedCategory] = useState('starters')
-
-  const categories = [
-    { id: 'starters', label: 'Starters', icon: Utensils },
-    { id: 'mains', label: 'Main Courses', icon: Wine },
-    { id: 'desserts', label: 'Desserts', icon: Cake },
-    { id: 'drinks', label: 'Beverages', icon: Martini }
-  ]
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.1, delayChildren: 0.2 }
-    }
-  }
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
-  }
-
+  }, [isOpen, onClose])
   return (
-    <div className="pt-32 pb-20">
-      {/* Hero Section */}
-      <section className="relative h-72 overflow-hidden mb-16">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black z-10" />
-          <div
-            className="w-full h-full bg-cover bg-center"
-            style={{
-              backgroundImage:
-                'url("https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80")',
-              filter: 'brightness(0.5) contrast(1.1)'
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{
+              opacity: 0,
             }}
+            animate={{
+              opacity: 1,
+            }}
+            exit={{
+              opacity: 0,
+            }}
+            onClick={onClose}
+            className="fixed inset-0 bg-black/95 backdrop-blur-md z-[80]"
           />
-        </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="relative z-20 h-full flex flex-col justify-center items-center text-center px-6"
-        >
-          <ChefHat className="w-16 h-16 text-gold-400 mb-4" />
-          <h1 className="text-5xl md:text-6xl font-serif font-bold mb-4">Our Menu</h1>
-          <p className="text-xl text-white/70">A culinary journey crafted with passion and precision</p>
-        </motion.div>
-      </section>
+          {/* Full Menu Container */}
+          <motion.div
+            initial={{
+              opacity: 0,
+              y: 100,
+            }}
+            animate={{
+              opacity: 1,
+              y: 0,
+            }}
+            exit={{
+              opacity: 0,
+              y: 100,
+            }}
+            transition={{
+              duration: 0.5,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            className="fixed inset-0 z-[90] flex flex-col"
+          >
+            {/* Header */}
+            <div className="sticky top-0 z-10 bg-black/80 backdrop-blur-xl border-b border-gold-400/20">
+              <div className="max-w-6xl mx-auto px-6 md:px-8 py-8 flex justify-between items-center">
+                <div>
+                  <h1 className="text-4xl md:text-5xl font-serif text-white mb-2">
+                    Complete Menu
+                  </h1>
+                  <p className="text-white/50 font-sans text-sm">
+                    Curated seasonal selections
+                  </p>
+                </div>
+                <button
+                  onClick={onClose}
+                  className="p-3 text-white/50 hover:text-white hover:bg-white/5 transition-all rounded-sm"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
 
-      <div className="max-w-5xl mx-auto px-6">
-        {/* Menu Introduction */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mb-16 space-y-4"
-        >
-          <p className="text-white/70 text-lg leading-relaxed">
-            Our menu is a reflection of the season, showcasing the finest ingredients
-            sourced from local farmers, international suppliers, and sustainable fisheries.
-          </p>
-          <div className="flex items-center justify-center gap-2 text-gold-400 text-sm">
-            <Clock className="w-4 h-4" />
-            <span>Dining experience: 2.5 - 3 hours | Wine pairings available</span>
-          </div>
-        </motion.div>
-
-        {/* Category Tabs */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          className="flex flex-wrap justify-center gap-3 mb-16"
-        >
-          {categories.map((category) => {
-            const IconComponent = category.icon
-            return (
-              <motion.button
-                key={category.id}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setSelectedCategory(category.id)}
-                className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold uppercase text-sm tracking-widest transition-all ${
-                  selectedCategory === category.id
-                    ? 'bg-gold-400 text-black'
-                    : 'bg-white/5 text-white/70 hover:bg-white/10 border border-white/10'
-                }`}
-              >
-                <IconComponent className="w-5 h-5" />
-                {category.label}
-              </motion.button>
-            )
-          })}
-        </motion.div>
-
-        {/* Menu Items */}
-        <motion.div
-          key={selectedCategory}
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="space-y-12"
-        >
-          {selectedCategory !== 'drinks' ? (
-            FULL_MENU[selectedCategory].map((item, index) => (
-              <motion.div
-                key={index}
-                variants={itemVariants}
-                className="border-b border-white/10 pb-12 last:border-b-0 group"
-              >
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-                  {/* Image */}
-                  {item.image && (
-                    <motion.div
-                      whileHover={{ scale: 1.05 }}
-                      className="md:col-span-1 overflow-hidden rounded-lg"
-                    >
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        className="w-full h-40 object-cover rounded-lg group-hover:opacity-90 transition-opacity duration-300"
-                      />
-                    </motion.div>
-                  )}
-
-                  {/* Content */}
-                  <div className={item.image ? 'md:col-span-2' : 'md:col-span-3'} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                    <div className="flex justify-between items-start gap-4 mb-3">
-                      <div className="flex-1">
-                        <h3 className="text-2xl font-serif text-white mb-2">{item.name}</h3>
-                      </div>
-                      <span className="text-gold-400 font-semibold whitespace-nowrap text-lg">{item.price}</span>
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto">
+              <div className="max-w-6xl mx-auto px-6 md:px-8 py-16">
+                {/* Menu Categories */}
+                {MENU_CATEGORIES.map((category, categoryIndex) => (
+                  <motion.section
+                    key={category.name}
+                    initial={{
+                      opacity: 0,
+                      y: 30,
+                    }}
+                    animate={{
+                      opacity: 1,
+                      y: 0,
+                    }}
+                    transition={{
+                      delay: categoryIndex * 0.1,
+                      duration: 0.6,
+                    }}
+                    className="mb-20"
+                  >
+                    {/* Category Header */}
+                    <div className="mb-12">
+                      <h2 className="text-3xl md:text-4xl font-serif text-white mb-3">
+                        {category.name}
+                      </h2>
+                      <div className="w-16 h-[2px] bg-gold-400" />
                     </div>
-                    
-                    <p className="text-white/70 text-sm leading-relaxed mb-4 flex-1">{item.description}</p>
-                    
-                    {/* Add to Cart Button */}
-                    {item.price !== 'Complimentary' && addToCart && (
-                      <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => addToCart({
-                          id: item.name,
-                          name: item.name,
-                          price: item.price,
-                          image: item.image,
-                          description: item.description
-                        })}
-                        className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-gold-400 to-gold-500 hover:from-gold-500 hover:to-gold-600 text-black font-bold rounded-lg transition-all duration-300 border border-gold-300 shadow-lg hover:shadow-gold-400/50 uppercase tracking-wide text-sm"
-                      >
-                        <ShoppingBag className="w-5 h-5" />
-                        Add to Cart
-                      </motion.button>
-                    )}
+
+                    {/* Menu Items */}
+                    <div className="space-y-8">
+                      {category.items.map((item, itemIndex) => (
+                        <motion.div
+                          key={item.id}
+                          initial={{
+                            opacity: 0,
+                            x: -20,
+                          }}
+                          animate={{
+                            opacity: 1,
+                            x: 0,
+                          }}
+                          transition={{
+                            delay: categoryIndex * 0.1 + itemIndex * 0.05,
+                            duration: 0.5,
+                          }}
+                          className="group relative"
+                        >
+                          <div className="flex flex-col md:flex-row items-start gap-8 pb-8 border-b border-white/5">
+                            {/* Item Image */}
+                            <div className="w-full md:w-32 h-32 flex-shrink-0 overflow-hidden rounded-sm bg-white/5">
+                              <img
+                                src={item.image}
+                                alt={item.title}
+                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                              />
+                            </div>
+
+                            {/* Item Info */}
+                            <div className="flex-1 w-full">
+                              <div className="flex items-baseline gap-4 mb-3">
+                                <h3 className="text-xl md:text-2xl font-serif text-white group-hover:text-gold-400 transition-colors">
+                                  {item.title}
+                                </h3>
+                                <div className="flex-1 border-b border-dotted border-white/10 mb-1" />
+                                <span className="text-gold-400 font-serif text-xl">
+                                  {item.price}
+                                </span>
+                              </div>
+                              <p className="text-white/60 font-sans text-sm mb-3 leading-relaxed">
+                                {item.description}
+                              </p>
+                              <p className="text-white/40 font-sans text-xs italic">
+                                {item.ingredients}
+                              </p>
+                            </div>
+
+                            {/* Add Button */}
+                            <button
+                              onClick={() => onAddToCart(item)}
+                              className="flex-shrink-0 px-6 py-2 border border-white/10 text-white hover:border-gold-400 hover:text-gold-400 transition-all text-xs uppercase tracking-widest group/btn mt-4 md:mt-0"
+                            >
+                              <span className="flex items-center gap-2">
+                                Add
+                                <ChevronRight className="w-3 h-3 group-hover/btn:translate-x-1 transition-transform" />
+                              </span>
+                            </button>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </motion.section>
+                ))}
+
+                {/* Menu Notes Section */}
+                <motion.section
+                  initial={{
+                    opacity: 0,
+                    y: 30,
+                  }}
+                  animate={{
+                    opacity: 1,
+                    y: 0,
+                  }}
+                  transition={{
+                    delay: 0.5,
+                    duration: 0.6,
+                  }}
+                  className="mb-20 pt-8 border-t border-gold-400/20"
+                >
+                  <div className="flex items-center gap-3 mb-8">
+                    <Info className="w-5 h-5 text-gold-400" />
+                    <h2 className="text-2xl font-serif text-white">
+                      Menu Notes
+                    </h2>
                   </div>
-                </div>
-              </motion.div>
-            ))
-          ) : (
-            FULL_MENU.drinks.map((section, sectionIndex) => (
-              <motion.div key={sectionIndex} variants={itemVariants} className="space-y-4">
-                <h3 className="text-2xl font-serif text-gold-400 mb-6 flex items-center gap-2">
-                  <Wine className="w-6 h-6" />
-                  {section.name}
-                </h3>
-                <div className="space-y-3 ml-4 border-l-2 border-gold-400/30 pl-6">
-                  {section.items.map((item, itemIndex) => (
-                    <div key={itemIndex} className="flex justify-between items-center">
-                      <span className="text-white/80">{item.split(' - ')[0]}</span>
-                      <span className="text-gold-400 font-semibold">{item.split(' - ')[1]}</span>
+
+                  <ul className="space-y-4">
+                    {MENU_NOTES.map((note, index) => (
+                      <motion.li
+                        key={index}
+                        initial={{
+                          opacity: 0,
+                          x: -10,
+                        }}
+                        animate={{
+                          opacity: 1,
+                          x: 0,
+                        }}
+                        transition={{
+                          delay: 0.6 + index * 0.05,
+                        }}
+                        className="flex items-start gap-4 text-white/70 font-sans text-sm"
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-gold-400 mt-2 flex-shrink-0" />
+                        <span>{note}</span>
+                      </motion.li>
+                    ))}
+                  </ul>
+                </motion.section>
+
+                {/* Wine Program Section */}
+                <motion.section
+                  initial={{
+                    opacity: 0,
+                    y: 30,
+                  }}
+                  animate={{
+                    opacity: 1,
+                    y: 0,
+                  }}
+                  transition={{
+                    delay: 0.7,
+                    duration: 0.6,
+                  }}
+                  className="mb-20 bg-zinc-900/50 border border-white/5 p-8 md:p-12"
+                >
+                  <div className="flex items-center gap-3 mb-6">
+                    <Wine className="w-6 h-6 text-gold-400" />
+                    <h2 className="text-3xl font-serif text-white">
+                      Wine Program
+                    </h2>
+                  </div>
+
+                  <p className="text-white/70 font-sans leading-relaxed mb-10 max-w-3xl">
+                    Our award-winning sommelier has curated an extensive wine
+                    collection featuring over 400 selections from regions around
+                    the world. Expert recommendations and pairings are available
+                    for every dish.
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                    {/* Wine Pairing Options */}
+                    <div>
+                      <h3 className="text-gold-400 uppercase tracking-widest text-xs font-bold mb-6">
+                        Wine Pairing Options
+                      </h3>
+                      <ul className="space-y-4">
+                        <li className="flex items-center justify-between pb-3 border-b border-white/5">
+                          <span className="text-white font-serif">
+                            Sommelier's Selection
+                          </span>
+                          <span className="text-gold-400 font-serif">
+                            $65/person
+                          </span>
+                        </li>
+                        <li className="flex items-center justify-between pb-3 border-b border-white/5">
+                          <span className="text-white font-serif">
+                            Premium Pairing
+                          </span>
+                          <span className="text-gold-400 font-serif">
+                            $95/person
+                          </span>
+                        </li>
+                        <li className="flex items-center justify-between pb-3 border-b border-white/5">
+                          <span className="text-white font-serif">
+                            À la Carte
+                          </span>
+                          <span className="text-white/50 font-sans text-sm italic">
+                            wine list available
+                          </span>
+                        </li>
+                      </ul>
                     </div>
-                  ))}
-                </div>
-              </motion.div>
-            ))
-          )}
-        </motion.div>
 
-        {/* Notes Section */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="mt-20 bg-white/5 backdrop-blur-sm rounded-lg p-8 border border-white/10 space-y-4"
-        >
-          <h3 className="text-xl font-serif text-gold-400">Menu Notes</h3>
-          <div className="space-y-2 text-white/70 text-sm">
-            <p>• All prices are per person | Service charge not included</p>
-            <p>• Our chef can accommodate vegetarian, vegan, and dietary restrictions with advance notice</p>
-            <p>• Wine pairings available starting from $65 per person</p>
-            <p>• Tasting menu experiences available upon request</p>
-            <p>• Menu items may vary based on seasonal availability</p>
-            <p>• Please inform our staff of any allergies</p>
-          </div>
-        </motion.section>
+                    {/* Private Wine Selection */}
+                    <div>
+                      <h3 className="text-gold-400 uppercase tracking-widest text-xs font-bold mb-6">
+                        Private Wine Selection
+                      </h3>
+                      <ul className="space-y-4">
+                        <li className="flex items-start gap-4 text-white/70 font-sans text-sm">
+                          <span className="w-1.5 h-1.5 rounded-full bg-gold-400 mt-2 flex-shrink-0" />
+                          <span>
+                            Corkage fee waived for selections from our list
+                          </span>
+                        </li>
+                        <li className="flex items-start gap-4 text-white/70 font-sans text-sm">
+                          <span className="w-1.5 h-1.5 rounded-full bg-gold-400 mt-2 flex-shrink-0" />
+                          <span>Special requests accommodated in advance</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </motion.section>
+              </div>
+            </div>
 
-        {/* Wine Program */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="mt-16 bg-gradient-to-r from-gold-400/10 to-transparent rounded-lg p-8 border border-gold-400/20"
-        >
-          <div className="flex items-center gap-3 mb-4">
-            <Wine className="w-6 h-6 text-gold-400" />
-            <h3 className="text-2xl font-serif text-gold-400">Wine Program</h3>
-          </div>
-          <p className="text-white/80 mb-4">
-            Our award-winning sommelier has curated an extensive wine collection featuring over 400 selections
-            from regions around the world. Expert recommendations and pairings are available for every dish.
-          </p>
-          <div className="grid md:grid-cols-2 gap-4 text-sm">
-            <div>
-              <p className="text-white font-semibold mb-2">Wine Pairing Options:</p>
-              <ul className="space-y-1 text-white/70">
-                <li>• Sommelier's Selection - $65/person</li>
-                <li>• Premium Pairing - $95/person</li>
-                <li>• À la Carte wine list available</li>
-              </ul>
+            {/* Footer Note */}
+            <div className="sticky bottom-0 bg-black/80 backdrop-blur-xl border-t border-white/5 py-6">
+              <p className="text-center text-white/30 text-xs font-sans">
+                All dishes are prepared fresh to order. Please inform your
+                server of any dietary restrictions.
+              </p>
             </div>
-            <div>
-              <p className="text-white font-semibold mb-2">Private Wine Selection:</p>
-              <ul className="space-y-1 text-white/70">
-                <li>• Corkage fee waived for selections from our list</li>
-                <li>• Special requests accommodated in advance</li>
-              </ul>
-            </div>
-          </div>
-        </motion.section>
-      </div>
-    </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
   )
 }

@@ -1,13 +1,12 @@
 import React, { useState } from 'react'
 import { ShoppingBag, Menu as MenuIcon } from 'lucide-react'
 import { motion, useScroll, useSpring } from 'framer-motion'
-
-// import Header from './components/Header'
 import Hero from './components/Hero'
 import AboutSection from './components/AboutSection'
 import MenuSection from './components/MenuSection'
 import MenuPage from './components/MenuPage'
 import ReviewsSection from './components/ReviewsSection'
+import  ChefSection  from './components/ChefSection'
 import BookingCalendar from './components/BookingCalendar'
 import GallerySection from './components/GallerySection'
 import Footer from './components/Footer'
@@ -18,35 +17,28 @@ import PaymentMethodModal from './components/PaymentMethodModal'
 import ReservationPaymentModal from './components/ReservationPaymentModal'
 import FullMenuPage from './components/FullMenuPage'
 import FloatingChatbot from './components/FloatingChatbot'
-
 export default function App() {
   const [currentPage, setCurrentPage] = useState('home')
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [isPaymentSuccess, setIsPaymentSuccess] = useState(false)
   const [isFullMenuOpen, setIsFullMenuOpen] = useState(false)
-
   // Modal States
   const [isReservationModalOpen, setIsReservationModalOpen] = useState(false)
   const [isPaymentMethodOpen, setIsPaymentMethodOpen] = useState(false)
-  const [isReservationPaymentOpen, setIsReservationPaymentOpen] = useState(false)
-
+  const [isReservationPaymentOpen, setIsReservationPaymentOpen] =
+    useState(false)
   const [selectedReservationDate, setSelectedReservationDate] = useState(null)
   const [cartItems, setCartItems] = useState([])
-
   const { scrollYProgress } = useScroll()
   const scaleX = useSpring(scrollYProgress, {
     stiffness: 100,
     damping: 30,
     restDelta: 0.001,
   })
-
   const cartTotal = cartItems.reduce((sum, item) => {
     const price = parseFloat(item.price.replace('$', ''))
     return sum + price * item.quantity
   }, 0)
-
-  const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0)
-
   const addToCart = (item) => {
     setCartItems((prev) => {
       const existing = prev.find((i) => i.id === item.id)
@@ -70,17 +62,14 @@ export default function App() {
     })
     setIsCartOpen(true)
   }
-
   const removeFromCart = (id) => {
     setCartItems((prev) => prev.filter((i) => i.id !== id))
   }
-
   // Cart Checkout Flow
   const handleCheckoutStart = () => {
     setIsCartOpen(false)
     setIsPaymentMethodOpen(true)
   }
-
   const handlePaymentComplete = () => {
     setIsPaymentMethodOpen(false)
     setTimeout(() => {
@@ -88,38 +77,29 @@ export default function App() {
       setCartItems([])
     }, 500)
   }
-
   // Reservation Flow
   const handleDateSelect = (date) => {
     setSelectedReservationDate(date)
     setIsReservationModalOpen(true)
   }
-
   const handleReservationDetailsComplete = (details) => {
     setIsReservationModalOpen(false)
     setIsReservationPaymentOpen(true)
   }
-
   const handleReservationPaymentSelect = (option) => {
     setIsReservationPaymentOpen(false)
-
     if (option === 'now') {
+      // If paying now, show payment method modal
       setIsPaymentMethodOpen(true)
     } else {
+      // If paying later, go straight to success
       setTimeout(() => {
         setIsPaymentSuccess(true)
       }, 500)
     }
   }
-
-  // Handle navigation
-  const handleNavigation = (page) => {
-    setCurrentPage(page)
-    window.scrollTo(0, 0)
-  }
-
   return (
-        <div className="bg-black min-h-screen text-white selection:bg-gold-400 selection:text-black">
+    <div className="bg-black min-h-screen text-white selection:bg-gold-400 selection:text-black">
       {/* Film Grain Overlay */}
       <div className="film-grain" />
 
@@ -149,20 +129,22 @@ export default function App() {
               </span>
             )}
           </button>
-          {/* <button className="p-2 hover:text-gold-400 transition-colors md:hidden">
+          <button className="p-2 hover:text-gold-400 transition-colors md:hidden">
             <MenuIcon className="w-6 h-6" />
-          </button> */}
+          </button>
         </div>
       </nav>
+
       {/* Main Content */}
       <main>
         {currentPage === 'home' && (
           <>
             <Hero />
             <AboutSection />
+            <ChefSection />
             <MenuSection
               addToCart={addToCart}
-              onViewFullMenu={() => setCurrentPage('menu')}
+              onViewFullMenu={() => setIsFullMenuOpen(true)}
             />
             <ReviewsSection />
             <BookingCalendar onBook={handleDateSelect} />
@@ -176,7 +158,6 @@ export default function App() {
 
         {currentPage === 'reservations' && <BookingCalendar onBook={handleDateSelect} />}
 
-        <ChefProfile />
         <Footer />
       </main>
 

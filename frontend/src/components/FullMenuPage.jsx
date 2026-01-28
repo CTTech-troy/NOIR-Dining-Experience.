@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, ChevronRight } from 'lucide-react'
+import { X, ChevronRight, Wine, Info } from 'lucide-react'
 
 const MENU_CATEGORIES = [
   {
@@ -188,6 +188,14 @@ const MENU_CATEGORIES = [
     ],
   },
 ]
+const MENU_NOTES = [
+  'All prices are per person | Service charge not included',
+  'Our chef can accommodate vegetarian, vegan, and dietary restrictions with advance notice',
+  'Wine pairings available starting from $65 per person',
+  'Tasting menu experiences available upon request',
+  'Menu items may vary based on seasonal availability',
+  'Please inform our staff of any allergies',
+]
 export default function FullMenuPage({
   isOpen,
   onClose,
@@ -213,37 +221,18 @@ export default function FullMenuPage({
         <>
           {/* Backdrop */}
           <motion.div
-            initial={{
-              opacity: 0,
-            }}
-            animate={{
-              opacity: 1,
-            }}
-            exit={{
-              opacity: 0,
-            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             onClick={onClose}
             className="fixed inset-0 bg-black/95 backdrop-blur-md z-[80]"
           />
-
           {/* Full Menu Container */}
           <motion.div
-            initial={{
-              opacity: 0,
-              y: 100,
-            }}
-            animate={{
-              opacity: 1,
-              y: 0,
-            }}
-            exit={{
-              opacity: 0,
-              y: 100,
-            }}
-            transition={{
-              duration: 0.5,
-              ease: [0.22, 1, 0.36, 1],
-            }}
+            initial={{ opacity: 0, y: 100 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 100 }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
             className="fixed inset-0 z-[90] flex flex-col"
           >
             {/* Header */}
@@ -265,26 +254,17 @@ export default function FullMenuPage({
                 </button>
               </div>
             </div>
-
             {/* Scrollable Content */}
             <div className="flex-1 overflow-y-auto">
               <div className="max-w-6xl mx-auto px-6 md:px-8 py-16">
+                {/* Menu Categories */}
                 {MENU_CATEGORIES.map((category, categoryIndex) => (
                   <motion.section
                     key={category.name}
-                    initial={{
-                      opacity: 0,
-                      y: 30,
-                    }}
-                    animate={{
-                      opacity: 1,
-                      y: 0,
-                    }}
-                    transition={{
-                      delay: categoryIndex * 0.1,
-                      duration: 0.6,
-                    }}
-                    className="mb-20 last:mb-0"
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: categoryIndex * 0.1, duration: 0.6 }}
+                    className="mb-20"
                   >
                     {/* Category Header */}
                     <div className="mb-12">
@@ -293,20 +273,13 @@ export default function FullMenuPage({
                       </h2>
                       <div className="w-16 h-[2px] bg-gold-400" />
                     </div>
-
                     {/* Menu Items */}
                     <div className="space-y-8">
                       {category.items.map((item, itemIndex) => (
                         <motion.div
                           key={item.id}
-                          initial={{
-                            opacity: 0,
-                            x: -20,
-                          }}
-                          animate={{
-                            opacity: 1,
-                            x: 0,
-                          }}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
                           transition={{
                             delay: categoryIndex * 0.1 + itemIndex * 0.05,
                             duration: 0.5,
@@ -322,7 +295,6 @@ export default function FullMenuPage({
                                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                               />
                             </div>
-
                             {/* Item Info */}
                             <div className="flex-1 w-full">
                               <div className="flex items-baseline gap-4 mb-3">
@@ -341,12 +313,9 @@ export default function FullMenuPage({
                                 {item.ingredients}
                               </p>
                             </div>
-
                             {/* Add Button */}
                             <button
-                              onClick={() => {
-                                onAddToCart(item)
-                              }}
+                              onClick={() => onAddToCart(item)}
                               className="flex-shrink-0 px-6 py-2 border border-white/10 text-white hover:border-gold-400 hover:text-gold-400 transition-all text-xs uppercase tracking-widest group/btn mt-4 md:mt-0"
                             >
                               <span className="flex items-center gap-2">
@@ -360,9 +329,89 @@ export default function FullMenuPage({
                     </div>
                   </motion.section>
                 ))}
+                {/* Menu Notes Section */}
+                <motion.section
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5, duration: 0.6 }}
+                  className="mb-20 pt-8 border-t border-gold-400/20"
+                >
+                  <div className="flex items-center gap-3 mb-8">
+                    <Info className="w-5 h-5 text-gold-400" />
+                    <h2 className="text-2xl font-serif text-white">Menu Notes</h2>
+                  </div>
+                  
+                  <ul className="space-y-4">
+                    {MENU_NOTES.map((note, index) => (
+                      <motion.li
+                        key={index}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.6 + index * 0.05 }}
+                        className="flex items-start gap-4 text-white/70 font-sans text-sm"
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-gold-400 mt-2 flex-shrink-0" />
+                        <span>{note}</span>
+                      </motion.li>
+                    ))}
+                  </ul>
+                </motion.section>
+                {/* Wine Program Section */}
+                <motion.section
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.7, duration: 0.6 }}
+                  className="mb-20 bg-zinc-900/50 border border-white/5 p-8 md:p-12"
+                >
+                  <div className="flex items-center gap-3 mb-6">
+                    <Wine className="w-6 h-6 text-gold-400" />
+                    <h2 className="text-3xl font-serif text-white">Wine Program</h2>
+                  </div>
+                  
+                  <p className="text-white/70 font-sans leading-relaxed mb-10 max-w-3xl">
+                    Our award-winning sommelier has curated an extensive wine collection featuring over 400 selections from regions around the world. Expert recommendations and pairings are available for every dish.
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                    {/* Wine Pairing Options */}
+                    <div>
+                      <h3 className="text-gold-400 uppercase tracking-widest text-xs font-bold mb-6">
+                        Wine Pairing Options
+                      </h3>
+                      <ul className="space-y-4">
+                        <li className="flex items-center justify-between pb-3 border-b border-white/5">
+                          <span className="text-white font-serif">Sommelier's Selection</span>
+                          <span className="text-gold-400 font-serif">$65/person</span>
+                        </li>
+                        <li className="flex items-center justify-between pb-3 border-b border-white/5">
+                          <span className="text-white font-serif">Premium Pairing</span>
+                          <span className="text-gold-400 font-serif">$95/person</span>
+                        </li>
+                        <li className="flex items-center justify-between pb-3 border-b border-white/5">
+                          <span className="text-white font-serif">À la Carte</span>
+                          <span className="text-white/50 font-sans text-sm italic">wine list available</span>
+                        </li>
+                      </ul>
+                    </div>
+                    {/* Private Wine Selection */}
+                    <div>
+                      <h3 className="text-gold-400 uppercase tracking-widest text-xs font-bold mb-6">
+                        Private Wine Selection
+                      </h3>
+                      <ul className="space-y-4">
+                        <li className="flex items-start gap-4 text-white/70 font-sans text-sm">
+                          <span className="w-1.5 h-1.5 rounded-full bg-gold-400 mt-2 flex-shrink-0" />
+                          <span>Corkage fee waived for selections from our list</span>
+                        </li>
+                        <li className="flex items-start gap-4 text-white/70 font-sans text-sm">
+                          <span className="w-1.5 h-1.5 rounded-full bg-gold-400 mt-2 flex-shrink-0" />
+                          <span>Special requests accommodated in advance</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </motion.section>
               </div>
             </div>
-
             {/* Footer Note */}
             <div className="sticky bottom-0 bg-black/80 backdrop-blur-xl border-t border-white/5 py-6">
               <p className="text-center text-white/30 text-xs font-sans">
