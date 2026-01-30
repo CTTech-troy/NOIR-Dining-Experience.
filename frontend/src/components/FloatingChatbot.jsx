@@ -3,13 +3,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Send, MessageCircle, Phone, Mic } from "lucide-react";
 // import { encryptPayload } from "../utils/encryption";
 import { logger } from "../utils/logger";
+import ReservationReceipt from "./ReservationReceipt";
 
 // ==================== CONFIGURATION ====================
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000/api";
 
-logger.log("🔧 VAPI Configuration - Using CDN Script");
-logger.log("📡 SDK loaded via: https://cdn.jsdelivr.net/gh/VapiAI/html-script-tag@latest/dist/assets/index.js");
-logger.log("🌐 Backend URL:", BACKEND_URL);
+logger.log("🔧 HTTP Configuration (IP-based session isolation)");
+logger.log("📡 Backend URL:", BACKEND_URL);
+logger.log("🌐 Session tracking: IP-based (no WebSocket)");
 
 // ==================== COMPONENT ====================
 export default function FloatingChatbot() {
@@ -33,7 +34,12 @@ export default function FloatingChatbot() {
 
   const [input, setInput] = useState("");
   const [isCallActive, setIsCallActive] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const messagesEndRef = useRef(null);
+  const [connectionStatus, setConnectionStatus] = useState("connected"); // HTTP is always ready
+  const [sessionInfo, setSessionInfo] = useState(null); // { sessionId, messageCount }
+  const [showReservationModal, setShowReservationModal] = useState(false);
+  const [currentReservation, setCurrentReservation] = useState(null);
 
   // ---- Call session storage ----
   const callSessionRef = useRef({
@@ -46,53 +52,149 @@ export default function FloatingChatbot() {
   });
 
   // ---- Refs ----
-  const vapiInstanceRef = useRef(null);
+  const dograhCallRef = useRef(null);
   const audioRef = useRef(null);
 
-  // ---- Auto scroll chat ----
+  // ⚡ CHECK BACKEND HEALTH ON APP LOAD
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
-  // ---- Initialize Vapi from window.vapiSDK ----
-  useEffect(() => {
-    const initializeVapi = () => {
+    logger.log("⚡ [Init] Checking backend health...");
+    const checkHealth = async () => {
       try {
-        if (window.vapiSDK) {
-          logger.log("✅ Vapi SDK loaded from window.vapiSDK");
-          logger.log("🚀 Vapi SDK ready for voice calls");
-          vapiInstanceRef.current = window.vapiSDK;
-        } else {
-          logger.warn("⏳ Vapi SDK not loaded yet from CDN, will retry...");
-          setTimeout(initializeVapi, 500);
+        const response = await fetch(`${BACKEND_URL.replace('/api', '')}/health`);
+        if (response.ok) {
+          const data = await response.json();
+          logger.log("✅ Backend healthy:", data);
+          setConnectionStatus("connected");
+          setSessionInfo({ sessionId: data.userIP, messageCount: 0 });
+          addMessage("system", `✅ Session IP: ${data.userIP}`);
         }
       } catch (error) {
-        logger.error("❌ Vapi SDK check failed:", error.message);
+        logger.error("❌ Backend health check failed:", error);
+        setConnectionStatus("disconnected");
       }
     };
-
-    initializeVapi();
+    
+    checkHealth();
   }, []);
 
-  // ---- Check Microphone Permissions ----
+  // ---- Initialize VAPI Voice Agent ----
   useEffect(() => {
-    const checkMicrophoneAccess = async () => {
+    const initializeVAPIAgent = async () => {
       try {
-        logger.log("🎤 Checking microphone access...");
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        logger.log("✅ Microphone access GRANTED");
-        stream.getTracks().forEach(track => track.stop());
-      } catch (error) {
-        logger.error("❌ Microphone access DENIED:", error.name, "-", error.message);
-        if (error.name === "NotAllowedError") {
-          addMessage("system", "❌ Microphone permission denied. Please allow microphone access in browser settings.");
-        } else if (error.name === "NotFoundError") {
-          addMessage("system", "❌ No microphone device found. Please check your hardware.");
+        logger.log("🎤 Initializing VAPI voice agent...");
+        
+        const vapiKey = import.meta.env.VITE_VAPI_API_KEY;
+        if (!vapiKey) {
+          logger.warn("⚠️ VAPI_API_KEY not configured in .env");
+          return;
         }
+
+        // Try to import from npm package first
+        try {
+          logger.log("📦 Importing VAPI from npm package...");
+          const { default: Vapi } = await import('@vapi-ai/web');
+          
+          logger.log("🚀 Creating VAPI instance from npm...");
+          window.vapiInstance = new Vapi(vapiKey);
+          logger.log("✅ VAPI instance created from npm package");
+          
+          setupVAPIListeners();
+          setIsVoiceEnabled(true);
+          logger.log("✅ VAPI voice agent ready");
+          return;
+        } catch (npmError) {
+          logger.warn("⚠️ npm import failed:", npmError.message);
+          logger.log("📚 Falling back to CDN loader...");
+        }
+
+        // Fallback to CDN loader script
+        if (!window.loadVapiSDK) {
+          logger.log("📚 Loading VAPI SDK loader from CDN...");
+          const loaderScript = document.createElement("script");
+          loaderScript.src = "/vapi-loader.js";
+          loaderScript.async = true;
+          
+          loaderScript.onload = () => {
+            logger.log("✅ VAPI loader script loaded");
+            initializeVapiFromLoader();
+          };
+          
+          loaderScript.onerror = () => {
+            logger.error("❌ Failed to load VAPI loader");
+            addMessage("system", "⚠️ Voice feature unavailable - SDK loading failed");
+          };
+          
+          document.head.appendChild(loaderScript);
+        } else {
+          initializeVapiFromLoader();
+        }
+      } catch (error) {
+        logger.error("❌ VAPI initialization error:", error.message);
+        addMessage("system", `⚠️ Voice feature unavailable: ${error.message}`);
       }
     };
 
-    checkMicrophoneAccess();
+    const initializeVapiFromLoader = async () => {
+      try {
+        const vapiKey = import.meta.env.VITE_VAPI_API_KEY;
+        logger.log("🚀 Creating VAPI instance from CDN...");
+        window.vapiInstance = await window.initializeVapi(vapiKey);
+        
+        logger.log("✅ VAPI instance created with key:", vapiKey.substring(0, 8) + "...");
+        setupVAPIListeners();
+        setIsVoiceEnabled(true);
+        logger.log("✅ VAPI voice agent ready");
+      } catch (error) {
+        logger.error("❌ Failed to create VAPI instance from CDN:", error.message);
+        addMessage("system", `⚠️ Voice not available: ${error.message}`);
+      }
+    };
+
+    const setupVAPIListeners = () => {
+      if (!window.vapiInstance) return;
+
+      window.vapiInstance.on("call-start", () => {
+        logger.log("📞 Call started");
+        setIsCallActive(true);
+        setVoiceConnectionStatus("connected");
+      });
+
+      window.vapiInstance.on("call-end", ({ reason }) => {
+        logger.log("📴 Call ended - Reason:", reason || "unknown");
+        setIsCallActive(false);
+        setVoiceConnectionStatus("idle");
+        
+        // Log specific end reasons for debugging
+        if (reason === "silence-timed-out") {
+          logger.warn("⚠️ Call ended due to silence - check mic and audio output");
+        }
+      });
+
+      window.vapiInstance.on("speech-start", () => {
+        logger.log("🔊 Riley speaking");
+      });
+
+      window.vapiInstance.on("speech-end", () => {
+        logger.log("🤐 Riley finished");
+      });
+
+      window.vapiInstance.on("message", (message) => {
+        if (message.type === 'transcript') {
+          logger.log(`💬 ${message.role}: ${message.transcript}`);
+        }
+      });
+
+      window.vapiInstance.on("audio", (audioData) => {
+        logger.log("🎵 Audio received from assistant");
+      });
+
+      window.vapiInstance.on("error", (error) => {
+        logger.error("❌ VAPI error:", error);
+        setVoiceConnectionStatus("failed");
+      });
+    };
+
+    initializeVAPIAgent();
   }, []);
 
   // ---- Verify Environment Variables ----
@@ -106,146 +208,144 @@ export default function FloatingChatbot() {
     logger.log("  - BACKEND_URL:", BACKEND_URL);
     
     if (!vapiApiKey || !vapiAssistantId) {
-      addMessage("system", "⚠️ Missing VAPI credentials. Check .env file.");
+      logger.warn("⚠️ VAPI credentials not fully configured. Voice calls may not work.");
     }
   }, []);
 
-  // ---- Make Voice Call using Vapi SDK ----
+  // ---- Start Voice Call with VAPI ----
   const makeVoiceCall = async () => {
     try {
-      if (!window.vapiSDK) {
-        throw new Error("Vapi SDK not loaded. Please check CDN connection.");
+      logger.log("📞 Initiating VAPI voice call...");
+
+      // STEP 1: Request microphone permissions
+      logger.log("🎙️ Requesting microphone permission...");
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        // Stop the stream - we just needed permission granted
+        stream.getTracks().forEach(track => track.stop());
+        logger.log("✅ Microphone permission granted");
+      } catch (error) {
+        throw new Error(`Microphone access denied: ${error.message}`);
       }
 
-      logger.log("📞 Starting voice call with Vapi SDK...");
-
-      const vapiApiKey = import.meta.env.VITE_VAPI_API_KEY;
-      const vapiAssistantId = import.meta.env.VITE_VAPI_ASSISTANT_ID;
-
-      if (!vapiApiKey || !vapiAssistantId) {
-        throw new Error("Vapi credentials missing from environment");
+      // STEP 2: Resume AudioContext (CRITICAL for browser audio policy)
+      logger.log("🔊 Resuming AudioContext...");
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (AudioContext) {
+        const audioContext = new AudioContext();
+        if (audioContext.state === "suspended") {
+          await audioContext.resume();
+          logger.log("✅ AudioContext resumed from suspended state");
+        } else {
+          logger.log("✅ AudioContext state:", audioContext.state);
+        }
       }
 
-      // Start the call using Vapi SDK (browser WebRTC microphone only)
-      logger.log("🎙️ Calling window.vapiSDK.run() with credentials...");
-      logger.log("📋 Call Config:", {
-        hasApiKey: !!vapiApiKey,
-        hasAssistantId: !!vapiAssistantId,
-        apiKeyLength: vapiApiKey?.length,
-        assistantIdLength: vapiAssistantId?.length
-      });
+      // STEP 3: Create/verify VAPI instance
+      if (!window.vapiInstance) {
+        logger.warn("⚠️ VAPI instance not ready, attempting to create...");
+        
+        const vapiKey = import.meta.env.VITE_VAPI_API_KEY;
+        
+        if (!vapiKey) {
+          throw new Error("VAPI_API_KEY not configured in .env");
+        }
 
-      window.vapiSDK.run({
-        apiKey: vapiApiKey,
-        assistant: vapiAssistantId,
-        onMessage: handleVapiMessage,
-        onError: handleVapiError,
-        onEnd: handleVapiEnd
-      });
+        // Try npm import first
+        try {
+          logger.log("📦 Importing VAPI from npm...");
+          const { default: Vapi } = await import('@vapi-ai/web');
+          window.vapiInstance = new Vapi(vapiKey);
+          logger.log("✅ VAPI instance created from npm");
+        } catch (npmErr) {
+          logger.warn("⚠️ npm import failed, checking for CDN-loaded SDK...");
+          
+          // Check if Vapi class is available from CDN
+          const VapiClass = window.Vapi || window.default;
+          if (!VapiClass) {
+            throw new Error("VAPI SDK not loaded. Please refresh the page.");
+          }
 
-      logger.log("✅ Vapi call initiated - SDK will handle mic & audio automatically");
-      logger.log("📢 Waiting for assistant to start speaking (First Message Mode)...");
+          window.vapiInstance = new VapiClass(vapiKey);
+          logger.log("✅ VAPI instance created from CDN");
+        }
 
-      return { success: true };
-    } catch (error) {
-      logger.error("❌ Vapi call failed:", error.message);
-      throw error;
-    }
-  };
+        // STEP 4: Setup audio stream attachment for guaranteed playback
+        logger.log("🔗 Setting up audio stream attachment...");
+        window.vapiInstance.on("audio", (audioData) => {
+          logger.log("🎵 Received audio from Vapi");
+          
+          try {
+            // Create audio element if it doesn't exist
+            if (!window.vapiAudioElement) {
+              window.vapiAudioElement = document.createElement("audio");
+              window.vapiAudioElement.id = "vapi-audio-output";
+              window.vapiAudioElement.autoplay = true;
+              window.vapiAudioElement.style.display = "none";
+              document.body.appendChild(window.vapiAudioElement);
+              logger.log("✅ Audio element created and attached to DOM");
+            }
 
-  // Handle Vapi messages
-  const handleVapiMessage = (message) => {
-    logger.log("📬 Vapi message received:", message.type || message);
-    
-    // Log all message details for debugging
-    if (message.type) {
-      logger.log("  ➜ Message type:", message.type);
-      if (message.transcript) logger.log("  ➜ Transcript:", message.transcript);
-      if (message.transcription) logger.log("  ➜ Transcription:", message.transcription);
-    }
-    
-    if (message.type === "user-transcription" || message.type === "user_transcription") {
-      setVoiceActivityDetected(true);
-      const text = message.transcription || message.text || "";
-      if (text) {
-        logger.log("🎤 User:", text.substring(0, 50));
-        addMessage("user", text);
-      }
-    } else if (message.type === "assistant-transcription" || message.type === "assistant_transcription") {
-      const text = message.transcription || message.text || "";
-      if (text) {
-        logger.log("🤖 Assistant:", text.substring(0, 50));
-        addMessage("bot", text);
-      }
-    } else if (message.type === "call-start" || message.type === "call_start") {
-      logger.log("📞 Call started - Listening for assistant to speak...");
-      addMessage("system", "📞 Call connected - Listening for assistant...");
-    } else if (message.type === "call-end" || message.type === "call_end") {
-      logger.log("📴 Call ended");
-      setVoiceActivityDetected(false);
-      setVolumeLevel(0);
-    } else if (message.type === "remote-audio" || message.type === "remote-stream" || message.type === "audio") {
-      logger.log("🎧 Remote audio received:", message.type);
-      if (message.stream && audioRef.current) {
-        audioRef.current.srcObject = message.stream;
-        audioRef.current.play().then(() => {
-          logger.log("🔊 Assistant audio playing!");
-        }).catch((err) => {
-          logger.error("❌ Audio playback failed:", err.name, "-", err.message);
-          logger.warn("⚠️ Browser may have blocked autoplay. Common causes:");
-          logger.warn("   - Browser autoplay policy requires user interaction first");
-          logger.warn("   - Volume might be muted");
-          logger.warn("   - Check audio output device in system settings");
+            // Attach audio stream
+            if (audioData && audioData.rawAudio) {
+              window.vapiAudioElement.srcObject = audioData.rawAudio;
+              logger.log("✅ Audio stream attached to playback element");
+            }
+          } catch (error) {
+            logger.error("❌ Error attaching audio:", error.message);
+          }
         });
       }
-    } else {
-      // Log unknown message types for debugging
-      logger.log("❓ Unknown message type:", JSON.stringify(message));
-    }
-  };
 
-  const handleVapiError = (error) => {
-    logger.error("❌ Vapi error:", error);
-    logger.error("   Error details:", {
-      name: error?.name,
-      message: error?.message,
-      code: error?.code,
-      type: typeof error
-    });
-    const errorMsg = error?.message || error?.toString() || "Unknown error";
-    addMessage("system", `❌ Error: ${errorMsg}`);
-  };
+      setVoiceConnectionStatus("connecting");
+      addMessage("system", "🎤 Connecting to Riley...");
 
-  const handleVapiEnd = () => {
-    logger.log("📴 Vapi call ended");
-    logger.log("📊 Call Statistics:");
-    if (callSessionRef.current) {
-      logger.log("  - Duration:", callSessionRef.current.endedAt ? (callSessionRef.current.endedAt - callSessionRef.current.startedAt) / 1000 + "s" : "N/A");
-      logger.log("  - Messages:", messages.length);
-    }
-    
-    // Ensure SDK is fully stopped and UI is closed
-    try {
-      const vapi = vapiInstanceRef.current || window.vapiSDK;
-      if (vapi && vapi.stop) {
-        vapi.stop();
-        logger.log("🛑 Vapi SDK stopped");
+      const vapiAssistantId = import.meta.env.VITE_VAPI_ASSISTANT_ID;
+      if (!vapiAssistantId) {
+        throw new Error("VAPI_ASSISTANT_ID not configured");
       }
+
+      // STEP 5: Start the call with assistant ID
+      logger.log("📞 Starting call with assistant:", vapiAssistantId);
+      await window.vapiInstance.start(vapiAssistantId);
+
+      setIsCallActive(true);
+      setVoiceConnectionStatus("connected");
+      addMessage("bot", "🎤 Connected to Riley! You can now speak about reservations, menu questions, or dining preferences. Riley is ready to help!");
       
-      // Hide any remaining Vapi UI elements
-      const vapiRoot = document.getElementById('vapi-root');
-      if (vapiRoot) {
-        vapiRoot.style.display = 'none';
-        vapiRoot.style.visibility = 'hidden';
-      }
+      logger.log("✅ VAPI voice call initiated successfully");
+
+      return { success: true };
+
     } catch (error) {
-      logger.warn("⚠️ Could not fully close Vapi UI:", error.message);
+      logger.error("❌ Voice call failed:", error.message);
+      setVoiceConnectionStatus("failed");
+      addMessage("system", `❌ Error: ${error.message}`);
+      return { success: false, error: error.message };
     }
-    
-    setIsCallActive(false);
-    setVoiceActivityDetected(false);
-    setVolumeLevel(0);
-    setVoiceConnectionStatus("idle");
+  };
+
+  // Handle ending voice communication
+  const endVAPICall = async () => {
+    try {
+      if (!window.vapiInstance) {
+        logger.warn("⚠️ VAPI instance not available");
+        return;
+      }
+
+      logger.log("🔴 Ending VAPI voice call");
+      await window.vapiInstance.stop();
+      
+      setIsCallActive(false);
+      setVoiceConnectionStatus("idle");
+      addMessage("bot", "✅ Voice communication ended. Thank you for using Riley! Feel free to chat or book another call anytime.");
+      
+      logger.log("✅ VAPI call ended successfully");
+
+    } catch (error) {
+      logger.error("❌ Error ending voice session:", error.message);
+      addMessage("system", `⚠️ Error ending call: ${error.message}`);
+    }
   };
 
   // ---- Add message to chat ----
@@ -261,29 +361,29 @@ export default function FloatingChatbot() {
     ]);
   };
 
-  // ==================== VAPI CALL MANAGEMENT ====================
+  // ==================== IN-APP VOICE COMMUNICATION ====================
   const handleStartCall = async () => {
     if (!isCallActive) {
       try {
-        logger.log("📞 Starting voice call with Vapi SDK...");
-        logger.log("💡 Troubleshooting Checklist:");
-        logger.log("  1️⃣ Microphone must be ALLOWED in browser");
-        logger.log("  2️⃣ Check VAPI_ASSISTANT_ID in Vapi Dashboard - set First Message Mode to 'Assistant Speaks First'");
-        logger.log("  3️⃣ Audio output device should be enabled (not muted)");
-        logger.log("  4️⃣ Open browser console (F12) to see all messages below");
-
-        if (!window.vapiSDK) {
-          throw new Error("Vapi SDK not available. Please refresh the page.");
-        }
+        logger.log("🎤 🎤 🎤 STARTING IN-APP VOICE COMMUNICATION 🎤 🎤 🎤");
+        logger.log("💡 Information:");
+        logger.log("  1️⃣ Your browser will request microphone access");
+        logger.log("  2️⃣ Speak freely with the AI agent");
+        logger.log("  3️⃣ Agent will understand and respond");
+        logger.log("  4️⃣ Click Hang Up to end conversation");
 
         setIsLoading(true);
         setVoiceConnectionStatus("connecting");
-        addMessage("system", "⏳ Initializing voice call...");
+        addMessage("system", "⏳ Preparing voice communication...");
 
-        // Start the call - Vapi SDK handles microphone automatically
-        await makeVoiceCall();
+        // Start the voice communication
+        const result = await makeVoiceCall();
 
-        callSessionRef.current.startedAt = Date.now();
+        if (!result.success) {
+          throw new Error(result.error || "Failed to start voice communication");
+        }
+
+        callSessionRef.current.startedAt = new Date();
         callSessionRef.current.transcript = [];
 
         setIsCallActive(true);
@@ -291,34 +391,32 @@ export default function FloatingChatbot() {
         setVoiceConnectionStatus("connected");
         setRetryCount(0);
 
-        addMessage("system", "✅ Call connected! Speak now...");
+        logger.log("✅ ✅ ✅ VOICE COMMUNICATION READY ✅ ✅ ✅");
+        logger.log("🎤 You can now speak with the AI agent!");
 
-        // Log to backend
-        try {
-          await fetch(`${BACKEND_URL}/vapi/initiate-call`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              userId: "web-user",
-              timestamp: new Date().toISOString()
-            })
-          });
-          logger.log("✅ Call logged to backend");
-        } catch (logError) {
-          logger.warn("⚠️ Backend logging failed:", logError.message);
-        }
-
-        } catch (error) {
-        logger.error("❌ Call failed:", error.message);
+      } catch (error) {
+        logger.error("❌ Voice communication failed:", error.message);
         setIsLoading(false);
         setVoiceConnectionStatus("failed");
-        addMessage("system", `❌ Error: ${error.message}`);
+        setRetryCount(retryCount + 1);
 
         if (retryCount < 3) {
-          setRetryCount(prev => prev + 1);
-          addMessage("system", `🔄 Retrying... (Attempt ${retryCount + 2}/3)`);
-          setTimeout(handleStartCall, 2000);
+          addMessage("system", `❌ ${error.message} (Attempt ${retryCount + 1}/3)`);
+          logger.log(`🔄 Retry available. Attempt ${retryCount + 1} of 3`);
+        } else {
+          addMessage("system", `❌ Voice communication failed after ${retryCount} attempts. Please try again.`);
+          logger.error(`❌ Max retries (${retryCount}) exceeded`);
         }
+      }
+    } else {
+      // End the voice communication if already active
+      try {
+        setIsLoading(true);
+        await endVAPICall();
+        setIsLoading(false);
+      } catch (error) {
+        logger.error("❌ Error ending communication:", error.message);
+        setIsLoading(false);
       }
     }
   };
@@ -327,41 +425,20 @@ export default function FloatingChatbot() {
   const handleEndCall = async () => {
     if (isCallActive) {
       try {
-        logger.log("📴 Ending voice call...");
+        logger.log("📴 📴 📴 ENDING VAPI CALL 📴 📴 📴");
 
-        // Stop the call via SDK
-        const vapi = vapiInstanceRef.current || window.vapiSDK;
-        if (vapi && vapi.stop) {
-          vapi.stop();
-          logger.log("✅ Call stopped via SDK");
-        }
+        // End the VAPI call
+        await endVAPICall();
 
         setIsCallActive(false);
         setVoiceActivityDetected(false);
         setVolumeLevel(0);
         setVoiceConnectionStatus("idle");
 
-        addMessage("system", "✅ Call ended");
+        logger.log("✅ VAPI CALL DISCONNECTED");
+        addMessage("system", "✅ Call ended successfully");
 
-        // Log call end to backend
-        try {
-          const callId = callSessionRef.current.callId || `call_${Date.now()}`;
-          await fetch(`${BACKEND_URL}/vapi/end-call`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              callId: callId,
-              transcript: callSessionRef.current.transcript,
-              duration: (Date.now() - (callSessionRef.current.startedAt || Date.now())) / 1000,
-              timestamp: new Date().toISOString()
-            })
-          });
-          logger.log("✅ Call end logged to backend");
-        } catch (logError) {
-          logger.warn("⚠️ Failed to log call end:", logError.message);
-        }
-
-        callSessionRef.current.endedAt = Date.now();
+        callSessionRef.current.endedAt = new Date();
       } catch (error) {
         logger.error("❌ Error ending call:", error.message);
         setIsCallActive(false);
@@ -370,13 +447,185 @@ export default function FloatingChatbot() {
     }
   };
 
+  // ==================== RESERVATION HANDLING ====================
+  /**
+   * Extract reservation details from AI response
+   */
+  const extractReservationDetails = (message, userMessage) => {
+    // Try to extract date, time, and guest count from both messages
+    const dateMatch = userMessage.match(/(\w+ \d{1,2}(?:st|nd|rd|th)?)/i) || message.match(/(\w+ \d{1,2}(?:st|nd|rd|th)?)/i);
+    const timeMatch = userMessage.match(/(\d{1,2}):(\d{2})\s*(AM|PM|am|pm)?/) || message.match(/(\d{1,2}):(\d{2})\s*(AM|PM|am|pm)?/);
+    const guestMatch = userMessage.match(/(\d+)\s*(?:guests?|people|persons)/) || message.match(/(\d+)\s*(?:guests?|people|persons)/);
+
+    if (dateMatch && timeMatch && guestMatch) {
+      // Parse date (e.g., "February 5th" -> "2026-02-05")
+      const dateStr = dateMatch[1];
+      const monthMap = {
+        january: 1, february: 2, march: 3, april: 4, may: 5, june: 6,
+        july: 7, august: 8, september: 9, october: 10, november: 11, december: 12
+      };
+      const [monthName, day] = dateStr.match(/(\w+)\s+(\d+)/i).slice(1);
+      const monthNum = monthMap[monthName.toLowerCase()];
+      const year = new Date().getFullYear();
+      const date = `${year}-${String(monthNum).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+      // Parse time
+      const hour = String(timeMatch[1]).padStart(2, '0');
+      const minute = timeMatch[2];
+      const period = (timeMatch[3] || 'PM').toUpperCase();
+      let hourNum = parseInt(hour);
+      if (period === 'PM' && hourNum !== 12) hourNum += 12;
+      if (period === 'AM' && hourNum === 12) hourNum = 0;
+      const time = `${String(hourNum).padStart(2, '0')}:${minute}`;
+
+      // Parse guest count
+      const guests = parseInt(guestMatch[1]);
+
+      return { date, time, numGuests: guests };
+    }
+
+    return null;
+  };
+
+  /**
+   * Create reservation after checking availability
+   */
+  const createReservation = async (details, customerName) => {
+    try {
+      logger.log("📅 Creating reservation:", details);
+      setIsProcessing(true);
+
+      // First check availability
+      const availResponse = await fetch(`${BACKEND_URL}/booking/check-availability`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          numGuests: details.numGuests,
+          date: details.date,
+          time: details.time
+        })
+      });
+
+      const availData = await availResponse.json();
+
+      if (!availData.available) {
+        addMessage("bot", `❌ Sorry, we don't have availability for ${details.numGuests} guest(s) on ${details.date} at ${details.time}. Would you like to try a different date or time?`);
+        setIsProcessing(false);
+        return;
+      }
+
+      addMessage("system", `✅ Availability confirmed! Processing your reservation...`);
+
+      // Create reservation
+      const bookResponse = await fetch(`${BACKEND_URL}/booking/create-reservation`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customerName: customerName || "Guest",
+          numGuests: details.numGuests,
+          date: details.date,
+          time: details.time,
+          email: "",
+          phone: ""
+        })
+      });
+
+      const bookData = await bookResponse.json();
+
+      if (bookData.success) {
+        logger.log("✅ Reservation created:", bookData.reservation);
+        
+        // Set reservation and show modal
+        setCurrentReservation(bookData.reservation);
+        setShowReservationModal(true);
+
+        addMessage("bot", `✅ **Reservation Confirmed!**\n\nReservation ID: ${bookData.reservation.id}\nTable ${bookData.reservation.tableId} (${bookData.reservation.tableLocation})\n\nPlease review the receipt and complete payment.`);
+      } else {
+        addMessage("bot", `❌ Failed to create reservation: ${bookData.error}`);
+      }
+    } catch (error) {
+      logger.error("❌ Reservation error:", error);
+      addMessage("system", `❌ Error creating reservation: ${error.message}`);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+
   // ==================== TEXT CHAT MESSAGE HANDLING ====================
-  const handleSendMessage = (e) => {
+  const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!input.trim()) return;
 
-    addMessage("user", input);
+    // Add user message to chat
+    const userMessage = input;
+    addMessage("user", userMessage);
     setInput("");
+    setIsProcessing(true);
+
+    try {
+      // Get conversation history for context
+      const conversationHistory = messages
+        .filter(msg => msg.type !== 'system')
+        .map(msg => ({
+          type: msg.type,
+          text: msg.text
+        }));
+
+      logger.log("💬 Sending message via HTTP:", userMessage.substring(0, 50) + "...");
+
+      // Send to backend HTTP endpoint (IP-based session isolation)
+      const response = await fetch(`${BACKEND_URL}/openai/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: userMessage,
+          conversationHistory: conversationHistory
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Backend error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.success && data.message) {
+        logger.log("✅ Response received:", data.message.substring(0, 50) + "...");
+        logger.log("🌐 Session ID:", data.sessionId);
+        addMessage("bot", data.message);
+        
+        // Update session info
+        if (data.sessionId && data.messageCount !== undefined) {
+          setSessionInfo({ 
+            sessionId: data.sessionId, 
+            messageCount: data.messageCount 
+          });
+        }
+
+        // Check if this is a reservation confirmation message
+        if (data.message.includes("confirm") && (data.message.includes("availability") || data.message.includes("hold"))) {
+          // Extract reservation details from the conversation
+          const reservationDetails = extractReservationDetails(data.message, userMessage);
+          
+          if (reservationDetails) {
+            logger.log("📅 Booking details extracted:", reservationDetails);
+            // Wait a moment, then create the reservation
+            setTimeout(() => {
+              createReservation(reservationDetails, "Guest");
+            }, 1500);
+          }
+        }
+      } else {
+        throw new Error(data.error || "Failed to get response");
+      }
+
+    } catch (error) {
+      logger.error("❌ Chat error:", error.message);
+      addMessage("system", `❌ Error: ${error.message}`);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleVoiceInput = () => {
@@ -393,6 +642,11 @@ export default function FloatingChatbot() {
       }
     ]);
   };
+
+  // ---- Auto scroll chat ----
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   return (
     <>
@@ -512,6 +766,29 @@ export default function FloatingChatbot() {
 
             {/* Action Buttons */}
             <div className="border-t border-gold-400/20 p-1.5 xs:p-2 sm:p-3 bg-dark-200/50">
+              {/* Session & Connection Status */}
+              <div className="mb-2 space-y-1">
+                {/* Connection Status */}
+                <div className="p-1.5 xs:p-2 rounded bg-dark-100 border border-gold-400/20 text-[10px] xs:text-xs text-white/70 flex items-center gap-1">
+                  <span className={`w-1.5 h-1.5 rounded-full ${
+                    connectionStatus === 'connected' ? 'bg-green-500' :
+                    connectionStatus === 'connecting' ? 'bg-yellow-500' :
+                    'bg-red-500'
+                  }`}></span>
+                  {connectionStatus === 'connected' && "✅ Connected"}
+                  {connectionStatus === 'connecting' && "⏳ Connecting..."}
+                  {connectionStatus === 'disconnected' && "🔌 Disconnected"}
+                </div>
+
+                {/* Session Info */}
+                {/* {sessionInfo && (
+                  <div className="p-1.5 xs:p-2 rounded bg-dark-100 border border-blue-400/20 text-[9px] xs:text-[10px] text-blue-300 font-mono">
+                    <div>🔐 Session: {sessionInfo.sessionId.substring(0, 8)}...</div>
+                    <div>📊 Messages: {sessionInfo.messageCount}</div>
+                  </div>
+                )} */}
+              </div>
+
               {/* Voice Connection Status */}
               {voiceConnectionStatus !== "idle" && (
                 <div className="mb-2 p-1.5 xs:p-2 rounded bg-dark-100 border border-gold-400/20 text-[10px] xs:text-xs text-white/70">
@@ -538,6 +815,7 @@ export default function FloatingChatbot() {
 
                 <motion.button
                   whileHover={{ scale: 1.05 }}
+                  id="call"
                   whileTap={{ scale: 0.95 }}
                   onClick={isCallActive ? handleEndCall : handleStartCall}
                   disabled={useTextChat}
@@ -617,16 +895,44 @@ export default function FloatingChatbot() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   type="submit"
-                  disabled={!input.trim() || isLoading}
+                  disabled={!input.trim() || isLoading || isProcessing}
                   className="bg-gold-400 text-black rounded-lg px-2 xs:px-2.5 sm:px-4 py-1 xs:py-1.5 sm:py-2 font-semibold hover:bg-gold-500 disabled:opacity-50 transition-colors flex items-center justify-center"
                 >
-                  <Send className="w-3 xs:w-3.5 sm:w-4 h-3 xs:h-3.5 sm:h-4" />
+                  {isProcessing ? (
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity }}
+                      className="w-3 xs:w-3.5 sm:w-4 h-3 xs:h-3.5 sm:h-4"
+                    >
+                      <Send className="w-3 xs:w-3.5 sm:w-4 h-3 xs:h-3.5 sm:h-4" />
+                    </motion.div>
+                  ) : (
+                    <Send className="w-3 xs:w-3.5 sm:w-4 h-3 xs:h-3.5 sm:h-4" />
+                  )}
                 </motion.button>
               </div>
             </form>
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Reservation Receipt & Payment Modal */}
+      <AnimatePresence>
+        {showReservationModal && currentReservation && (
+          <ReservationReceipt
+            reservation={currentReservation}
+            onClose={() => {
+              setShowReservationModal(false);
+              addMessage("system", "💬 Is there anything else I can help you with?");
+            }}
+            onPaymentComplete={(paymentInfo) => {
+              setShowReservationModal(false);
+              addMessage("system", `✅ Payment processed! (${paymentInfo.method})`);
+              addMessage("bot", `🎉 Thank you for your reservation and payment! We look forward to seeing you at NOIR. Your reservation ID is ${currentReservation.id}.`);
+            }}
+          />
+        )}
+      </AnimatePresence>
     </>
   );
-        }
+};  
