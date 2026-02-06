@@ -6,7 +6,7 @@ import { logger } from "../utils/logger";
 import ReservationReceipt from "./ReservationReceipt";
 
 // ==================== CONFIGURATION ====================
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000/api";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "https://noirdining.netlify.app/api";
 
 logger.log("🔧 HTTP Configuration (IP-based session isolation)");
 logger.log("📡 Backend URL:", BACKEND_URL);
@@ -769,15 +769,15 @@ export default function FloatingChatbot() {
               {/* Session & Connection Status */}
               <div className="mb-2 space-y-1">
                 {/* Connection Status */}
-                <div className="p-1.5 xs:p-2 rounded bg-dark-100 border border-gold-400/20 text-[10px] xs:text-xs text-white/70 flex items-center gap-1">
+                <div className="p-1.5 xs:p-2 rounded  xs:text-xs text-white/70 flex items-center gap-1">
                   <span className={`w-1.5 h-1.5 rounded-full ${
                     connectionStatus === 'connected' ? 'bg-green-500' :
                     connectionStatus === 'connecting' ? 'bg-yellow-500' :
                     'bg-red-500'
                   }`}></span>
-                  {connectionStatus === 'connected' && "✅ Connected"}
-                  {connectionStatus === 'connecting' && "⏳ Connecting..."}
-                  {connectionStatus === 'disconnected' && "🔌 Disconnected"}
+                  {connectionStatus === 'connected' && ""}
+                  {connectionStatus === 'connecting' && ""}
+                  {connectionStatus === 'disconnected' && ""}
                 </div>
 
                 {/* Session Info */}
@@ -790,13 +790,7 @@ export default function FloatingChatbot() {
               </div>
 
               {/* Voice Connection Status */}
-              {voiceConnectionStatus !== "idle" && (
-                <div className="mb-2 p-1.5 xs:p-2 rounded bg-dark-100 border border-gold-400/20 text-[10px] xs:text-xs text-white/70">
-                  {voiceConnectionStatus === "connecting" && "⏳ Connecting to voice service..."}
-                  {voiceConnectionStatus === "connected" && "✅ Voice connected"}
-                  {voiceConnectionStatus === "failed" && "❌ Voice unavailable"}
-                </div>
-              )}
+              
               
               <div className="flex gap-1 xs:gap-2">
                 <motion.button

@@ -177,14 +177,14 @@ top_p: 0.9            // Response diversity (default 0.9)
 ## 🧪 Testing the Integration
 
 ### Via Browser UI
-1. Open http://localhost:5173
+1. Open https://noirdining.netlify.app
 2. Click chat button
 3. Type: "What's your specialty?"
 4. Should respond with restaurant-specific answer
 
 ### Via cURL
 ```bash
-curl -X POST http://localhost:5000/api/openai/chat \
+curl -X POST https://noirdining.netlify.app/api/openai/chat \
   -H "Content-Type: application/json" \
   -d '{
     "message": "Do you have vegetarian options?",
@@ -194,7 +194,7 @@ curl -X POST http://localhost:5000/api/openai/chat \
 
 ### Health Check
 ```bash
-curl http://localhost:5000/api/openai/health
+curl https://noirdining.netlify.app/api/openai/health
 ```
 
 ## 🚀 Deployment Considerations

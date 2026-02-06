@@ -137,7 +137,7 @@ VITE_DOGRAH_PRIVATE_KEY=dgr_79UXyQcdHSt2gd6RBUAOmW_2l1qKEZKc-LIDhTYeNzc
 VITE_DOGRAH_WIDGET_TOKEN=emb_ZuvoxDUYjE9WvaNanI3AGJdioBbKrZnbgOVf8bZC1V8
 
 # Backend Configuration
-VITE_BACKEND_URL=http://localhost:5000/api
+VITE_BACKEND_URL=https://noirdining.netlify.app/api
 ```
 
 ### 2. Frontend Components
@@ -438,7 +438,7 @@ export default function App() {
 ### 1. Backend Health Check
 
 ```bash
-curl http://localhost:5000/api/dograh/health
+curl https://noirdining.netlify.app/api/dograh/health
 ```
 
 Expected response:
@@ -453,19 +453,19 @@ Expected response:
 ### 2. Test Integration
 
 ```bash
-curl -X POST http://localhost:5000/api/dograh/test
+curl -X POST https://noirdining.netlify.app/api/dograh/test
 ```
 
 ### 3. Check Agent Status
 
 ```bash
-curl http://localhost:5000/api/dograh/agent-status
+curl https://noirdining.netlify.app/api/dograh/agent-status
 ```
 
 ### 4. Initiate Test Call
 
 ```bash
-curl -X POST http://localhost:5000/api/dograh/initiate-call \
+curl -X POST https://noirdining.netlify.app/api/dograh/initiate-call \
   -H "Content-Type: application/json" \
   -d '{
     "phoneNumber": "+1234567890",

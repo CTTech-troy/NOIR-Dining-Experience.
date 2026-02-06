@@ -94,7 +94,7 @@ cd frontend && npm run dev
 ```
 
 ### 4. Test
-- Open http://localhost:5173
+- Open https://noirdining.netlify.app
 - Click chat button
 - Type: "What are your hours?"
 - Receive AI response!
@@ -197,21 +197,21 @@ Can be customized in: `backend/src/controller/openai.Controller.js`
 ## 🧪 Testing
 
 ### Browser Test
-1. http://localhost:5173
+1. https://noirdining.netlify.app
 2. Click chat button
 3. Type: "What is your restaurant about?"
 4. Should respond with NOIR info
 
 ### API Test
 ```bash
-curl -X POST http://localhost:5000/api/openai/chat \
+curl -X POST https://noirdining.netlify.app/api/openai/chat \
   -H "Content-Type: application/json" \
   -d '{"message":"Hello","conversationHistory":[]}'
 ```
 
 ### Health Check
 ```bash
-curl http://localhost:5000/api/openai/health
+curl https://noirdining.netlify.app/api/openai/health
 ```
 
 ---
@@ -292,7 +292,7 @@ OPENAI_INTEGRATION_SUMMARY.md
 2. ✅ Add key to `backend/.env`
 3. ✅ Start backend: `cd backend && npm start`
 4. ✅ Start frontend: `cd frontend && npm run dev`
-5. ✅ Test the chatbot at http://localhost:5173
+5. ✅ Test the chatbot at https://noirdining.netlify.app
 
 ### Short Term (This Week)
 1. ✅ Customize restaurant context in openai.Controller.js

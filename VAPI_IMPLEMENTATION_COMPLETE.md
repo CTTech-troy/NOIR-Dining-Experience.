@@ -162,7 +162,7 @@ Riley asks for:
 ```
 VITE_VAPI_API_KEY=2dc227da-e77c-4932-9a47-8b26f1306771
 VITE_VAPI_ASSISTANT_ID=c6744c79-9b14-45a3-b0bb-97c21c21a1c9
-VITE_BACKEND_URL=http://localhost:5000/api
+VITE_BACKEND_URL=https://noirdining.netlify.app/api
 ```
 
 ### Backend (.env):

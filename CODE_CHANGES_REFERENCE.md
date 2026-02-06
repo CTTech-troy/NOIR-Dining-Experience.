@@ -1,3 +1,4 @@
+
 # Code Changes Reference
 
 ## Files Modified
@@ -101,7 +102,7 @@ const handleSendMessage = async (e) => {
 
 **Updated environment variable check:**
 ```javascript
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000/api";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "https://noirdining.netlify.app/api";
 ```
 
 ---
@@ -290,7 +291,7 @@ Current `backend/package.json` already has all needed dependencies.
 
 ```bash
 # Test OpenAI endpoint
-curl -X POST http://localhost:5000/api/openai/chat \
+curl -X POST https://noirdining.netlify.app/api/openai/chat \
   -H "Content-Type: application/json" \
   -d '{
     "message": "What is your restaurant about?",
@@ -298,7 +299,7 @@ curl -X POST http://localhost:5000/api/openai/chat \
   }'
 
 # Test health endpoint
-curl http://localhost:5000/api/openai/health
+curl https://noirdining.netlify.app/api/openai/health
 ```
 
 ---

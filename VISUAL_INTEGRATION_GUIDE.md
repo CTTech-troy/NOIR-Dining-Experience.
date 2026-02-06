@@ -191,7 +191,7 @@ ENCRYPTION_IV=...
 ### Frontend `.env`
 ```bash
 # Already configured - No changes needed
-VITE_BACKEND_URL=http://localhost:5000/api
+VITE_BACKEND_URL=https://noirdining.netlify.app/api
 VITE_VAPI_API_KEY=...
 VITE_VAPI_ASSISTANT_ID=...
 ```
@@ -324,7 +324,7 @@ Cost optimization:
 ## ✅ Health Check Flow
 
 ```
-curl http://localhost:5000/api/openai/health
+curl https://noirdining.netlify.app/api/openai/health
 
                         ▼
                         

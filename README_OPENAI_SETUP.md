@@ -38,10 +38,10 @@ npm start
 cd frontend
 npm run dev
 ```
-✅ Should show: `Local: http://localhost:5173`
+✅ Should show: `Local: https://noirdining.netlify.app`
 
 ### 5️⃣ Test It!
-1. Open http://localhost:5173 in browser
+1. Open https://noirdining.netlify.app in browser
 2. Click chat button (bottom-right, gold circle)
 3. Type: `What are your hours?`
 4. AI responds: `We're open 11 AM - 11 PM, closed Mondays`
@@ -102,7 +102,7 @@ VAPI_ASSISTANT_ID=...
 **Frontend** (`frontend/.env`):
 ```bash
 # Already configured - Don't change
-VITE_BACKEND_URL=http://localhost:5000/api
+VITE_BACKEND_URL=https://noirdining.netlify.app/api
 VITE_VAPI_API_KEY=...
 VITE_VAPI_ASSISTANT_ID=...
 ```
@@ -218,7 +218,7 @@ model: "gpt-3.5-turbo"  // Instead of "gpt-4"
 ## 🧪 Testing
 
 ### Via Browser
-1. Open http://localhost:5173
+1. Open https://noirdining.netlify.app
 2. Click chat button
 3. Try these questions:
    - "What are your hours?"
@@ -229,7 +229,7 @@ model: "gpt-3.5-turbo"  // Instead of "gpt-4"
 ### Via Command Line (cURL)
 ```bash
 # Chat request
-curl -X POST http://localhost:5000/api/openai/chat \
+curl -X POST https://noirdining.netlify.app/api/openai/chat \
   -H "Content-Type: application/json" \
   -d '{
     "message": "What do you recommend?",
@@ -237,7 +237,7 @@ curl -X POST http://localhost:5000/api/openai/chat \
   }'
 
 # Health check
-curl http://localhost:5000/api/openai/health
+curl https://noirdining.netlify.app/api/openai/health
 ```
 
 ## ❌ Troubleshooting

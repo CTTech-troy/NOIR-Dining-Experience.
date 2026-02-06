@@ -168,7 +168,7 @@ Choose based on your needs:
 - [ ] Add key to `backend/.env`
 - [ ] Start backend: `npm start`
 - [ ] Start frontend: `npm run dev`
-- [ ] Test chatbot at http://localhost:5173
+- [ ] Test chatbot at https://noirdining.netlify.app
 - [ ] Read: [CODE_CHANGES_REFERENCE.md](./CODE_CHANGES_REFERENCE.md) (understand changes)
 
 ### 🔧 DevOps / Deployment

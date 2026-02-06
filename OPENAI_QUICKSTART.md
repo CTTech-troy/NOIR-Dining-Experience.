@@ -29,10 +29,10 @@ cd frontend
 npm run dev
 ```
 
-You should see: `Local: http://localhost:5173`
+You should see: `Local: https://noirdining.netlify.app`
 
 ### Step 5: Test It! 
-1. Open http://localhost:5173
+1. Open https://noirdining.netlify.app
 2. Click the chat button (bottom-right corner)
 3. Type: "What are your hours?"
 4. The chatbot responds with restaurant info!
@@ -53,7 +53,7 @@ VAPI_API_KEY=...
 ### Frontend - `frontend/.env`
 ```bash
 # Should already be set
-VITE_BACKEND_URL=http://localhost:5000/api
+VITE_BACKEND_URL=https://noirdining.netlify.app/api
 VITE_VAPI_API_KEY=...
 VITE_VAPI_ASSISTANT_ID=...
 ```
@@ -62,7 +62,7 @@ VITE_VAPI_ASSISTANT_ID=...
 
 ### Chat Endpoint
 ```bash
-POST http://localhost:5000/api/openai/chat
+POST https://noirdining.netlify.app/api/openai/chat
 
 Request:
 {
@@ -80,7 +80,7 @@ Response:
 
 ### Health Check
 ```bash
-GET http://localhost:5000/api/openai/health
+GET https://noirdining.netlify.app/api/openai/health
 ```
 
 ## 🎯 What the Chatbot Can Do
@@ -95,7 +95,7 @@ GET http://localhost:5000/api/openai/health
 ## 🐛 Quick Troubleshooting
 
 **"Chatbot not responding?"**
-- Check: Is backend running? (http://localhost:5000/health)
+- Check: Is backend running? (https://noirdining.netlify.app/health)
 - Check: Is API key in `.env`?
 - Check: Open DevTools (F12) → Console for errors
 

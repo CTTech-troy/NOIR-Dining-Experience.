@@ -145,7 +145,7 @@ DOGRAH_API_URL=https://api.dograh.ai/v1
 ```bash
 VITE_DOGRAH_API_KEY=mps_sk_nPTcBfsUdMxSqBNN5ErOKyjAHBRCOIki
 VITE_DOGRAH_PRIVATE_KEY=dgr_79UXyQcdHSt2gd6RBUAOmW_2l1qKEZKc-LIDhTYeNzc
-VITE_BACKEND_URL=http://localhost:5000/api
+VITE_BACKEND_URL=https://noirdining.netlify.app/api
 ```
 
 ### Optional: Custom Agent Setup
@@ -162,7 +162,7 @@ In Dograh.ai dashboard:
 
 ### Test 1: Backend Health Check
 ```bash
-curl http://localhost:5000/api/dograh/agent-status
+curl https://noirdining.netlify.app/api/dograh/agent-status
 ```
 
 Expected response:
@@ -180,7 +180,7 @@ Expected response:
 
 ### Test 2: Integration Test
 ```bash
-curl -X POST http://localhost:5000/api/dograh/test
+curl -X POST https://noirdining.netlify.app/api/dograh/test
 ```
 
 ### Test 3: Manual Call via Frontend
@@ -299,7 +299,7 @@ DOGRAH_INTEGRATION_SUMMARY.md                  (this file)
 - **Dograh.ai Docs**: https://docs.dograh.ai
 - **Backend Test**: `GET /api/dograh/agent-status`
 - **Integration Log**: Browser F12 Console (look for 🎤 emoji)
-- **API Documentation**: Visit `http://localhost:5000/debug`
+- **API Documentation**: Visit `https://noirdining.netlify.app/debug`
 
 ---
 

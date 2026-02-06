@@ -317,7 +317,7 @@ If something goes wrong:
 2. **Look for 🎤 emoji**: Indicates Dograh.ai logs
 3. **Check for ❌ red errors**: Shows what failed
 4. **Note the Call ID**: Use for debugging
-5. **Check Backend**: `curl http://localhost:5000/api/dograh/agent-status`
+5. **Check Backend**: `curl https://noirdining.netlify.app/api/dograh/agent-status`
 
 ---
 

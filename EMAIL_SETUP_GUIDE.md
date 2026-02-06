@@ -86,7 +86,7 @@ Look for logs like:
 ```
 
 ### 3. Make a Test Reservation
-1. Open frontend (http://localhost:5173)
+1. Open frontend (https://noirdining.netlify.app)
 2. Book a reservation with your email
 3. Check your email inbox for confirmation
 

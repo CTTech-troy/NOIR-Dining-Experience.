@@ -87,7 +87,7 @@ npm install
 ```bash
 npm run dev
 ```
-Navigate to `http://localhost:5173` to view the application.
+Navigate to `https://noirdining.netlify.app` to view the application.
 
 ### Build for Production
 ```bash

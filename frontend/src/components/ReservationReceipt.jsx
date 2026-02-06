@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Copy, Check, AlertCircle, CreditCard, Send, DollarSign } from "lucide-react";
 import { logger } from "../utils/logger";
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000/api";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "https://noirdining.netlify.app/api";
 
 export default function ReservationReceipt({ reservation, onClose, onPaymentComplete }) {
   const [paymentMethod, setPaymentMethod] = useState(null);

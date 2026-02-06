@@ -79,7 +79,7 @@ npm start
 npm run dev
 ```
 
-The backend will run on `http://localhost:5000`
+The backend will run on `https://noirdining.netlify.app`
 
 ### 5. Configure Frontend
 
@@ -87,7 +87,7 @@ The backend will run on `http://localhost:5000`
 
 ```bash
 # Backend URL (update if your backend runs on a different port)
-VITE_BACKEND_URL=http://localhost:5000/api
+VITE_BACKEND_URL=https://noirdining.netlify.app/api
 
 # Other existing configurations...
 VITE_VAPI_API_KEY=...
@@ -101,7 +101,7 @@ cd frontend
 npm run dev
 ```
 
-The frontend will run on `http://localhost:5173`
+The frontend will run on `https://noirdining.netlify.app`
 
 ## API Endpoints
 
@@ -214,8 +214,8 @@ You can customize this context in `backend/src/controller/openai.Controller.js` 
 
 ### Issue: "Failed to process chat message"
 **Solution**: 
-1. Check backend is running: `http://localhost:5000/health`
-2. Verify OpenAI API is working: `http://localhost:5000/api/openai/health`
+1. Check backend is running: `https://noirdining.netlify.app/health`
+2. Verify OpenAI API is working: `https://noirdining.netlify.app/api/openai/health`
 3. Check browser console (F12) for error details
 4. Ensure backend and frontend are on correct URLs
 
@@ -231,7 +231,7 @@ You can customize this context in `backend/src/controller/openai.Controller.js` 
 ### Test via Postman or cURL
 
 ```bash
-curl -X POST http://localhost:5000/api/openai/chat \
+curl -X POST https://noirdining.netlify.app/api/openai/chat \
   -H "Content-Type: application/json" \
   -d '{
     "message": "What is your cuisine type?",
@@ -242,7 +242,7 @@ curl -X POST http://localhost:5000/api/openai/chat \
 ### Test Health Check
 
 ```bash
-curl http://localhost:5000/api/openai/health
+curl https://noirdining.netlify.app/api/openai/health
 ```
 
 ## Cost Considerations
